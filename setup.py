@@ -37,7 +37,7 @@ def version_find():
 
 
 config = {
-    'name': "joker-access",
+    'name': "joker-{}".format(package_name),
     'version': version_find(),
     'description': 'access resources conveniently',
     'keywords': 'resource database access joker',
