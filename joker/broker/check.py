@@ -63,19 +63,19 @@ class CheckZone(object):
             self._entries = []
 
 
-default_chkzone = CheckZone(bool)
+default_zone = CheckZone(bool)
 
 
 def register(*funcs):
-    return default_chkzone.register(*funcs)
+    return default_zone.register(*funcs)
 
 
 def register_with_params(*args, **kwargs):
-    return default_chkzone.register_with_params(*args, **kwargs)
+    return default_zone.register_with_params(*args, **kwargs)
 
 
 def conduct_checks(clear=True):
-    return default_chkzone.conduct_checks(clear=clear)
+    return default_zone.conduct_checks(clear=clear)
 
 
 def instanciate(cls):
