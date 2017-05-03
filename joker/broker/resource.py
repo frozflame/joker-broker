@@ -34,13 +34,9 @@ def default_factory():
 
 class Conf(defaultdict):
     cached_instances = weakref.WeakValueDictionary()
-    default_path = os.path.expanduser('~/.joker.broker.yml')
 
     @classmethod
     def load(cls, path):
-        if not path:
-            path = Conf.default_path
-
         # if loaded already, return it
         path = os.path.abspath(path)
         if path in cls.cached_instances:
@@ -104,7 +100,7 @@ class ResourceBroker(object):
                 self.interfaces[name] = NullRedisInterface.from_conf(section)
 
     @classmethod
-    def create(cls, path=None):
+    def create(cls, path):
         conf = Conf.load(path)
         if id(conf) in cls.cached_instances:
             return cls.cached_instances[id(conf)]
