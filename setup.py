@@ -17,7 +17,7 @@ def readfile(filename):
 
 
 # change this
-package_name = 'access'
+package_name = 'broker'
 
 
 def version_find():
@@ -41,7 +41,7 @@ config = {
     'version': version_find(),
     'description': 'access resources conveniently',
     'keywords': 'resource database access joker',
-    'url': "https://github.com/frozflame/joker-access",
+    'url': "https://github.com/frozflame/joker-{}".format(package_name),
     'author': 'frozflame',
     'author_email': 'frozflame@outlook.com',
     'license': "GNU General Public License (GPL)",

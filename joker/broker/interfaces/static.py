@@ -9,7 +9,7 @@ from collections import OrderedDict
 
 import yaml
 
-from joker.access.security import HashedPath
+from joker.broker.security import HashedPath
 
 
 def deserialize_conf(path):
