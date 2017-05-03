@@ -1,0 +1,36 @@
+cache:
+  type: 'redis'
+  url: 'redis://127.0.0.1:6379/0'
+
+primary:
+  type: 'sql'
+  url: 'postgresql://127.0.0.1:5432/postgres'
+  echo: 0
+
+standby:
+  type: 'sql'
+  url: 'postgresql://127.0.0.1:5432/postgres'
+  echo: 0
+
+standby_01:
+  type: 'sql'
+  url: 'postgresql://127.0.0.1:5432/postgres'
+  echo: 0
+
+secret:
+  _extensions:
+    - '/info/credents/secret.json'
+
+  fernet:
+    - "zwAdSdG1lAs2nHefWcyGf9loMXfTdTiqrz-Fgpe3kv4="
+    - "ObWHDsMLra835J-vk2TlzIc0UY1wpb3dxDhnlNLSkbg="
+  session: "GoY/iz5hZXxWX0yNVjTrB0!F9AK4N~"
+  chatroom:
+    ~active: "8wp_weVO1Ygd8qt2zr"
+    v20170330: "18udioVzsnLT9Fu89s"
+    v20170328: "my-old-key"
+
+general:
+  _extensions: []
+  alice: 1
+  bob: 2
