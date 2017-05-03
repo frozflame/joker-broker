@@ -1,0 +1,2 @@
+include joker/example/VERSION
+include requirements.txt
