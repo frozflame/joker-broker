@@ -4,11 +4,17 @@
 from __future__ import division, print_function
 
 import hashlib
+import random
 import re
+import string
 
 import six
 from joker.cast import want_bytes, want_unicode
-from joker.textmanip import chars
+
+
+def gen_random_string(length):
+    chars = string.ascii_letters + string.digits
+    return ''.join(random.choice(chars) for _ in range(length))
 
 
 def guess_hash_algorithm(digest):
@@ -99,7 +105,7 @@ class HashedPassword(object):
     @classmethod
     def generate(cls, password, algo='sha512', salt=None):
         if salt is None:
-            salt = chars.random_string(16)
+            salt = gen_random_string(16)
         p = want_bytes(password)
         s = want_bytes(salt)
         h = hashlib.new(algo, p + s)

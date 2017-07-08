@@ -1,6 +1,6 @@
 from joker.broker.resource import ResourceBroker
 
-__version__ = '0.0.2'
+__version__ = '0.0.3'
 
 
 rb = None

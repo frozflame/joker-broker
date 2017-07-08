@@ -2,5 +2,5 @@ six
 fakeredis
 sqlalchemy
 joker-cast
-joker-textmanip
 pyyaml
+# cryptography
