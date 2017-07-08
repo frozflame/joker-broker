@@ -6,7 +6,7 @@ from __future__ import division, print_function
 import json
 
 from fakeredis import FakeStrictRedis
-from joker.nested.serialize import JSONEncoderExtended
+from joker.cast.serialize import JSONEncoderExtended
 from redis import StrictRedis
 
 

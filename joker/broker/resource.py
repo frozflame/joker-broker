@@ -144,7 +144,7 @@ class ResourceBroker(object):
             from joker.broker.interfaces.static import SecretInterface
             si = SecretInterface.from_default()
             return self.interfaces.setdefault('secret', si)
-
+    
     @property
     def primary(self):
         try:
@@ -156,7 +156,19 @@ class ResourceBroker(object):
             from joker.broker.interfaces.sql import SQLInterface
             si = SQLInterface.from_default()
             return self.interfaces.setdefault('primary', si)
-
+    
+    @property
+    def standby(self):
+        try:
+            return self['standby']
+        except KeyError:
+            # fallback to in-memory SQLite;
+            # also making this property type-inferrable.
+            # slow to import, so import when needed
+            from joker.broker.interfaces.sql import SQLInterface
+            si = SQLInterface.from_default()
+            return self.interfaces.setdefault('standby', si)
+        
     @property
     def cache(self):
         try:
