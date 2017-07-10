@@ -1,6 +1,6 @@
-six
+cryptography
 fakeredis
-sqlalchemy
-joker-cast
 pyyaml
-# cryptography
+six
+sqlalchemy
+joker-cast==0.0.3
