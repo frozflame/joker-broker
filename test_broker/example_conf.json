@@ -1,17 +1,17 @@
 {
     "primary": {
         "type": "sql",
-        "url": "postgresql://127.0.0.1:5432/vibrio",
+        "url": "postgresql://127.0.0.1:5432/postgres",
         "echo": false
     },
     "standby": {
         "type": "sql",
-        "url": "postgresql://127.0.0.1:5432/vibrio",
+        "url": "postgresql://127.0.0.1:5432/postgres",
         "echo": true
     },
     "standby_01": {
         "type": "sql",
-        "url": "postgresql://127.0.0.1:5432/vibrio",
+        "url": "postgresql://127.0.0.1:5432/postgres",
         "echo": true
     },
     "cache": {
