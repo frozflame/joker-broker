@@ -18,7 +18,8 @@ standby_01:
   echo: 0
 
 secret:
-  _extensions:
+  type: 'secret'
+  extensions:
     - '/info/credents/secret.json'
 
   fernet:
@@ -31,6 +32,6 @@ secret:
     v20170328: "my-old-key"
 
 general:
-  _extensions: []
+  extensions: []
   alice: 1
   bob: 2

@@ -74,28 +74,28 @@ class ResourceBroker(object):
         self.interfaces = dict()
 
         for name, section in conf.items():
-            type_ = section.get('type')
-            if name == 'general':
+            typ = section.get('type')
+            if not typ or typ == 'general':
                 from joker.broker.interfaces.static import GeneralInterface
                 self.interfaces[name] = GeneralInterface.from_conf(section)
 
-            elif name == 'secret':
+            elif typ == 'secret':
                 from joker.broker.interfaces.static import SecretInterface
                 self.interfaces[name] = SecretInterface.from_conf(section)
 
-            elif type_ == 'sql':
+            elif typ == 'sql':
                 from joker.broker.interfaces.sql import SQLInterface
                 self.interfaces[name] = SQLInterface.from_conf(section)
 
-            elif type_ == 'redis':
+            elif typ == 'redis':
                 from joker.broker.interfaces.redis import RedisInterface
                 self.interfaces[name] = RedisInterface.from_conf(section)
 
-            elif type_ == 'fakeredis':
+            elif typ == 'fakeredis':
                 from joker.broker.interfaces.redis import FakeRedisInterface
                 self.interfaces[name] = FakeRedisInterface.from_conf(section)
 
-            elif type_ == 'nullredis':
+            elif typ == 'nullredis':
                 from joker.broker.interfaces.redis import NullRedisInterface
                 self.interfaces[name] = NullRedisInterface.from_conf(section)
 

@@ -19,7 +19,8 @@
         "url": "redis://127.0.0.1:6379/0"
     },
     "secret": {
-        "_extensions": [
+        "type": "secret",
+        "extensions": [
             "/info/credents/secret.json"
         ],
         "fernet": [
@@ -34,6 +35,6 @@
         }
     },
     "general": {
-        "_extensions": []
+        "extensions": []
     }
 }

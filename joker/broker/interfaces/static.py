@@ -54,7 +54,7 @@ class StaticInterface(object):
 
     @classmethod
     def from_conf(cls, conf_section):
-        extensions = conf_section.pop('_extensions', [])
+        extensions = conf_section.pop('extensions', [])
         data = cls._standardize(conf_section)
         for ext in extensions:
             data.update(cls._load_extension_from_file(ext))
