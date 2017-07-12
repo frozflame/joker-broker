@@ -14,7 +14,7 @@ def _import_requirements():
     These imports are slow!
     """
     from joker.broker.security import HashedPath
-    from joker.broker.interfaces.sql import SQLInterface
+    from joker.broker.interfaces.sequel import SQLInterface
     from joker.broker.interfaces.static import deserialize_conf
     from joker.broker.interfaces.static import GeneralInterface
     from joker.broker.interfaces.static import SecretInterface
@@ -84,7 +84,7 @@ class ResourceBroker(object):
                 self.interfaces[name] = SecretInterface.from_conf(section)
 
             elif typ == 'sql':
-                from joker.broker.interfaces.sql import SQLInterface
+                from joker.broker.interfaces.sequel import SQLInterface
                 self.interfaces[name] = SQLInterface.from_conf(section)
 
             elif typ == 'redis':
@@ -113,7 +113,7 @@ class ResourceBroker(object):
         http://docs.sqlalchemy.org/en/latest/core/pooling.html\
         #using-connection-pools-with-multiprocessing
         """
-        from joker.broker.interfaces.sql import SQLInterface
+        from joker.broker.interfaces.sequel import SQLInterface
         for rb in cls.cached_instances.values():
             for res in rb.resources.values():
                 if isinstance(res, SQLInterface):
@@ -153,7 +153,7 @@ class ResourceBroker(object):
             # fallback to in-memory SQLite;
             # also making this property type-inferrable.
             # slow to import, so import when needed
-            from joker.broker.interfaces.sql import SQLInterface
+            from joker.broker.interfaces.sequel import SQLInterface
             si = SQLInterface.from_default()
             return self.interfaces.setdefault('primary', si)
     
@@ -165,7 +165,7 @@ class ResourceBroker(object):
             # fallback to in-memory SQLite;
             # also making this property type-inferrable.
             # slow to import, so import when needed
-            from joker.broker.interfaces.sql import SQLInterface
+            from joker.broker.interfaces.sequel import SQLInterface
             si = SQLInterface.from_default()
             return self.interfaces.setdefault('standby', si)
         

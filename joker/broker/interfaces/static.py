@@ -38,7 +38,7 @@ class StaticInterface(object):
     def __getitem__(self, name):
         return self.get(name)
 
-    def get(self, name, **kwargs):
+    def get(self, name, *args, **kwargs):
         raise NotImplementedError
 
     @classmethod
@@ -70,8 +70,8 @@ class GeneralInterface(StaticInterface):
     def _standardize(cls, conf_section):
         return conf_section
 
-    def get(self, name, **kwargs):
-        return self._data.get(name, **kwargs)
+    def get(self, name, *args, **kwargs):
+        return self._data.get(name, *args, **kwargs)
 
 
 class SecretInterface(StaticInterface):

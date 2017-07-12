@@ -49,9 +49,6 @@ config = {
     'namespace_packages': ["joker"],
     'zip_safe': False,
     'install_requires': readfile("requirements.txt"),
-    'data_files': [
-        (os.path.expanduser('~/.joker'), ['user_dir/broker.yml'])
-    ],
     'classifiers': [
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',

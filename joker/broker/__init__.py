@@ -17,3 +17,8 @@ def get_rb(path=None):
         return rb
     rb = ResourceBroker.create(path)
     return rb
+
+
+def induct():
+    from joker.broker.userdir import dump_default_conf
+    dump_default_conf()
