@@ -1,7 +1,7 @@
 from joker.broker.resource import ResourceBroker
 
 
-__version__ = '0.0.4'
+__version__ = '0.0.5'
 
 
 rb = None

@@ -4,7 +4,7 @@
 from __future__ import division, print_function
 
 import weakref
-
+from sqlalchemy import select
 
 class AbstractModel(object):
     """
@@ -186,7 +186,6 @@ class AbstractModel(object):
 
     @classmethod
     def get_table(cls, interface='primary'):
-
         if isinstance(interface, str):
             rb = cls.get_resource_broker()
             interface = rb[interface]
@@ -229,6 +228,25 @@ class AbstractModel(object):
         o = cls(**dict(row))
         o._update_cache()
         return o.mark_permanent()
+
+    @classmethod
+    def load_with(cls, column, value, interface='primary'):
+        pk = cls.find(column, value)
+        if pk is not None:
+            return cls.load(pk, interface=interface)
+
+    @classmethod
+    def find(cls, column, value, interface='primary'):
+        tbl = cls.get_table(interface)
+        stmt = select([getattr(tbl.c, cls.primary_key)])
+        stmt = stmt.where(getattr(tbl.c, column) == value)
+        stmt = stmt.limit(1)
+        resultproxy = stmt.execute()
+        row = resultproxy.fetchone()
+        resultproxy.close()
+        if row is None:
+            return
+        return getattr(row, cls.primary_key)
 
     def _insert(self, interface):
         tbl = self.get_table(interface)
