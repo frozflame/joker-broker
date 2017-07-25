@@ -32,8 +32,7 @@ class SQLInterface(object):
     @classmethod
     def from_default(cls):
         sqlalchemy_options = {
-            'url': 'sqlite://',
-            'client_encoding': 'utf-8',
+            'url': 'sqlite:///',
             'echo': False,
         }
         return cls(sqlalchemy_options)
@@ -44,11 +43,14 @@ class SQLInterface(object):
         :param conf_section: (dict or None)
         :return:
         """
+        url = conf_section.get('url')
         sqlalchemy_options = {
             'url': conf_section.get('url'),
-            'client_encoding': conf_section.get('client_encoding', 'utf-8'),
             'echo': conf_section.get('echo', False),
         }
+        if not url.startswith('sqlite:'):
+            sqlalchemy_options['client_encoding'] = \
+                conf_section.get('client_encoding', 'utf-8')
         return cls(sqlalchemy_options)
 
     @staticmethod
@@ -72,3 +74,6 @@ class SQLInterface(object):
                 table = Table(table_name, metadata, schema=schema, autoload=True)
             self.tables[(table_name, schema)] = table
         return self.tables[(table_name, schema)]
+
+    def execute(self, *args, **kwargs):
+        return self.engine.execute(*args, **kwargs)
