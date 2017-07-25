@@ -31,7 +31,7 @@ default_conf = {
     },
     'secret': {
         'type': 'secret',
-        'extensions': ['~/.joker/credents/secret.json'],
+        'extensions': [],
     },
     'standby': {
         'type': 'sql',
