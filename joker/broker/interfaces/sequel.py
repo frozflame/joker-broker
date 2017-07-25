@@ -13,7 +13,6 @@ from sqlalchemy.exc import SAWarning
 class SQLInterface(object):
     def __init__(self, sqlalchemy_options):
         self.pid = os.getpid()
-        self.tables = dict()
         self.engine = engine_from_config(sqlalchemy_options, prefix='')
         if self.engine.url.get_backend_name() == 'postgresql':
             self.metadata = MetaData(bind=self.engine, schema='public')
@@ -22,8 +21,8 @@ class SQLInterface(object):
 
     def just_after_fork(self):
         """
-        http://docs.sqlalchemy.org/en/latest/core/pooling.html\
-        #using-connection-pools-with-multiprocessing
+        http://docs.sqlalchemy.org/en/latest/core/pooling.html#using-\
+        connection-pools-with-multiprocessing
         """
         if self.pid != os.getpid():
             self.engine.dispose()
@@ -57,23 +56,21 @@ class SQLInterface(object):
     def dataset_connect():
         pass
 
-    # def get_metadata(self, schema):
-    #     if schema not in self.meta:
-    #         metadata = MetaData(bind=self.engine, schema=schema)
-    #         self.meta[schema] = metadata
-    #     return self.meta[schema]
+    @property
+    def tables(self):
+        return self.metadata.tables
 
     def get_table(self, table_name, schema=None):
-        # TODO: check if sqlalchemy has done relation cache already
-        if (table_name, schema) not in self.tables:
-            # metadata = self.get_metadata(schema)
-            metadata = self.metadata
-            with warnings.catch_warnings():
-                mreg = '.*Predicate.*partial.*index.*reflection.*'
-                warnings.filterwarnings('ignore', category=SAWarning, message=mreg)
-                table = Table(table_name, metadata, schema=schema, autoload=True)
-            self.tables[(table_name, schema)] = table
-        return self.tables[(table_name, schema)]
+        # SQLAlchemy document:
+        # http://docs.sqlalchemy.org/en/latest/core/reflection.html
+        # once loaded, new calls to Table # with the same name
+        # will not re-issue any reflection queries.
+        # So, sqlalchemy has done relation cache already!
+        metadata = self.metadata
+        with warnings.catch_warnings():
+            mreg = '.*Predicate.*partial.*index.*reflection.*'
+            warnings.filterwarnings('ignore', category=SAWarning, message=mreg)
+            return Table(table_name, metadata, schema=schema, autoload=True)
 
     def execute(self, *args, **kwargs):
         return self.engine.execute(*args, **kwargs)
