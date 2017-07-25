@@ -20,5 +20,5 @@ def get_rb(path=None):
 
 
 def induct():
-    from joker.broker.userdir import dump_default_conf
+    from joker.broker.userdefault import dump_default_conf
     dump_default_conf()

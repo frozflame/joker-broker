@@ -36,12 +36,17 @@ default_conf = {
     'standby': {
         'type': 'sql',
         'echo': 0,
-        'url': 'postgresql://127.0.0.1:5432/postgres'
+        'url': 'postgresql://127.0.0.1:5432/postgres',
+    },
+    'lite': {
+        'type': 'sql',
+        'echo': 0,
+        'url': 'sqlite:///'
     }
 }
 
 sections = [
-    'cache', 'primary', 'standby', 'secret',
+    'cache', 'lite', 'primary', 'standby', 'secret',
 ]
 
 

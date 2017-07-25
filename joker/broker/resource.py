@@ -127,57 +127,70 @@ class ResourceBroker(object):
             msg = msg.format(interface_name)
             raise ResourceNotFoundError(msg)
 
-    @property
-    def general(self):
+    # The following code seems redundant,
+    # but I cannot find a better way to ensure both IDE's grammar inferrence
+    # and lazy import of Interface classes work well.
+
+    def get_general_interface(self, name):
         try:
-            return self['general']
+            return self[name]
         except KeyError:
             from joker.broker.interfaces.static import GeneralInterface
             gi = GeneralInterface.from_default()
-            return self.interfaces.setdefault('general', gi)
+            return self.interfaces.setdefault(name, gi)
 
-    @property
-    def secret(self):
+    def get_secret_interface(self, name):
         try:
-            return self['secret']
+            return self[name]
         except KeyError:
             from joker.broker.interfaces.static import SecretInterface
             si = SecretInterface.from_default()
-            return self.interfaces.setdefault('secret', si)
-    
-    @property
-    def primary(self):
+            return self.interfaces.setdefault(name, si)
+
+    def get_sequel_interface(self, name):
         try:
-            return self['primary']
+            return self[name]
         except KeyError:
             # fallback to in-memory SQLite;
             # also making this property type-inferrable.
             # slow to import, so import when needed
             from joker.broker.interfaces.sequel import SQLInterface
             si = SQLInterface.from_default()
-            return self.interfaces.setdefault('primary', si)
-    
-    @property
-    def standby(self):
+            return self.interfaces.setdefault(name, si)
+
+    def get_redis_interface(self, name):
         try:
-            return self['standby']
-        except KeyError:
-            # fallback to in-memory SQLite;
-            # also making this property type-inferrable.
-            # slow to import, so import when needed
-            from joker.broker.interfaces.sequel import SQLInterface
-            si = SQLInterface.from_default()
-            return self.interfaces.setdefault('standby', si)
-        
-    @property
-    def cache(self):
-        try:
-            return self['cache']
+            return self[name]
         except KeyError:
             # fallback to set-n-forget cache;
             # also making this property type-inferrable.
             # slow to import, so import when needed
             from joker.broker.interfaces.redis import NullRedisInterface
             si = NullRedisInterface()
-            return self.interfaces.setdefault('cache', si)
+            return self.interfaces.setdefault(name, si)
 
+    # some preset interfaces: general, secret, cache, primary, standby, lite
+
+    @property
+    def general(self):
+        return self.get_general_interface('general')
+
+    @property
+    def secret(self):
+        return self.get_secret_interface('secret')
+
+    @property
+    def primary(self):
+        return self.get_sequel_interface('primary')
+
+    @property
+    def standby(self):
+        return self.get_sequel_interface('standby')
+
+    @property
+    def lite(self):
+        return self.get_sequel_interface('lite')
+
+    @property
+    def cache(self):
+        return self.get_redis_interface('cache')
