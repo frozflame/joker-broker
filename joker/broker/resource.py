@@ -147,7 +147,7 @@ class ResourceBroker(object):
             si = SecretInterface.from_default()
             return self.interfaces.setdefault(name, si)
 
-    def get_sequel_interface(self, name):
+    def get_sql_interface(self, name):
         try:
             return self[name]
         except KeyError:
@@ -181,15 +181,15 @@ class ResourceBroker(object):
 
     @property
     def primary(self):
-        return self.get_sequel_interface('primary')
+        return self.get_sql_interface('primary')
 
     @property
     def standby(self):
-        return self.get_sequel_interface('standby')
+        return self.get_sql_interface('standby')
 
     @property
     def lite(self):
-        return self.get_sequel_interface('lite')
+        return self.get_sql_interface('lite')
 
     @property
     def cache(self):
