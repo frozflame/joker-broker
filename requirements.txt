@@ -1,4 +1,4 @@
-cryptography
+cryptography>=1.4.0
 fakeredis
 pyyaml
 six
