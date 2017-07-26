@@ -75,7 +75,7 @@ class GeneralInterface(StaticInterface):
 
 
 class SecretInterface(StaticInterface):
-    def get(self, name, version=None):
+    def get(self, name, version=None, *args, **kwargs):
         versions_dict = self._data.get(name)
         if not versions_dict:
             return
