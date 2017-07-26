@@ -2,6 +2,10 @@
 Change Log
 ----------
 
+#### 0.0.7
+
+* move MultiFernetWrapper away to joker.masquerade 
+
 #### 0.0.6
 
 * add SQLInterface.execute
