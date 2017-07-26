@@ -11,8 +11,6 @@ import string
 import six
 from joker.cast import want_bytes, want_unicode
 
-from joker.broker.security.symmetric import MultiFernetWrapper
-
 
 def gen_random_string(length):
     chars = string.ascii_letters + string.digits

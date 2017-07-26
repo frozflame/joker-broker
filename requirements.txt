@@ -1,6 +1,5 @@
-cryptography>=1.4.0
 fakeredis
 pyyaml
 six
 sqlalchemy
-joker-cast==0.0.3
+joker-cast>=0.0.3
