@@ -9,8 +9,6 @@ import os
 from joker.broker.security import (
     HashedPath, HashedPassword, guess_hash_algorithm)
 
-from joker.broker.security.asymmetric import RSAKeyPair
-
 
 def test_hashed_path():
     path = os.path.abspath(__file__)
@@ -39,17 +37,6 @@ def test_guess_hash_algorithm():
         assert guess_hash_algorithm(h.digest()) == algo_name
         assert guess_hash_algorithm(h.hexdigest()) == algo_name
         print(algo_name)
-
-
-def test_fernet_wrapper():
-    return
-
-
-def test_rsa_key_pair():
-    m = 'keep me as a secret'
-    kpair = RSAKeyPair()
-    cipher = kpair.encrypt(m.encode())
-    assert kpair.decrypt(cipher) == m.encode()
 
 
 if __name__ == '__main__':
