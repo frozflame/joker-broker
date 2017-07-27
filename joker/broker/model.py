@@ -231,23 +231,27 @@ class AbstractModel(object):
         return o.mark_permanent()
 
     @classmethod
-    def load_with(cls, column, value, interface='primary'):
-        pk = cls.find(column, value)
-        if pk is not None:
-            return cls.load(pk, interface=interface)
-
-    @classmethod
-    def find(cls, column, value, interface='primary'):
+    def find(cls, kvpairs, multi=False, interface='primary'):
+        """
+        :param kvpairs: dict,\
+            e.g. {'name': 'alice', 'gender': 'female'}
+        :param multi: bool
+        :param interface: str
+        :return: 
+        """
         tbl = cls.get_table(interface)
-        stmt = select([getattr(tbl.c, cls.primary_key)])
-        stmt = stmt.where(getattr(tbl.c, column) == value)
-        stmt = stmt.limit(1)
-        resultproxy = stmt.execute()
-        row = resultproxy.fetchone()
-        resultproxy.close()
-        if row is None:
-            return
-        return getattr(row, cls.primary_key)
+        stmt = tbl.select()
+        for k, v in kvpairs.items():
+            stmt = stmt.where(getattr(tbl.c, k) == v)
+        if not multi:
+            stmt = stmt.limit(1)
+        objects = [cls(**dict(r)) for r in list(stmt.execute())]
+        if multi:
+            return objects
+        try:
+            return objects[0]
+        except IndexError:
+            return None
 
     def _insert(self, interface):
         tbl = self.get_table(interface)
