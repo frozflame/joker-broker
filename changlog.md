@@ -2,18 +2,21 @@
 Change Log
 ----------
 
-#### 0.0.8
+#### 0.0.9
+* AbstractModel.find: update_cache() and mark_permanet()
 
+
+#### 0.0.8
 * AbstractModel._update_cache -> AbstractModel.update_cache
 * remove AbstractModel.load_with 
 * new AbstractModel.find, returning objects in stead of pk
 
-#### 0.0.7
 
+#### 0.0.7
 * move MultiFernetWrapper away to joker.masquerade 
 
-#### 0.0.6
 
+#### 0.0.6
 * add SQLInterface.execute
 * remove redundant Table cache from SQLInterface, which is done by SQLAlchemy already
 * remove client_encoding for sqlite
@@ -23,12 +26,10 @@ Change Log
 
 
 #### 0.0.5
-
 * add methods `find` and `load_with` to `AbstractModel`
 
 
 #### 0.0.4
-
 * user directory (`~/.joker`) and default config file creation 
 * bugfix: StaticInterface.get lacks *args so that `si.get('DEBUG', False)` fails 
 * joker.broker.interfaces.sql -> ...sequel

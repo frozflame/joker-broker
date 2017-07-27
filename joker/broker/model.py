@@ -4,7 +4,6 @@
 from __future__ import division, print_function
 
 import weakref
-from sqlalchemy import select
 
 
 class AbstractModel(object):

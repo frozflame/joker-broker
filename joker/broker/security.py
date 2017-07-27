@@ -3,18 +3,13 @@
 
 from __future__ import division, print_function
 
+import base64
 import hashlib
-import random
+import os
 import re
-import string
 
 import six
 from joker.cast import want_bytes, want_unicode
-
-
-def gen_random_string(length):
-    chars = string.ascii_letters + string.digits
-    return ''.join(random.choice(chars) for _ in range(length))
 
 
 def guess_hash_algorithm(digest):
@@ -97,6 +92,11 @@ class HashedPassword(object):
         self.algo = algo
         self.salt = salt
 
+    @staticmethod
+    def gen_random_string(length):
+        n = 1 + int(length * 0.625)
+        return base64.b32encode(os.urandom(n)).decode()[:length]
+
     @classmethod
     def parse(cls, s):
         digest, algo, salt = s.split(':')
@@ -105,7 +105,7 @@ class HashedPassword(object):
     @classmethod
     def generate(cls, password, algo='sha512', salt=None):
         if salt is None:
-            salt = gen_random_string(16)
+            salt = cls.gen_random_string(16)
         p = want_bytes(password)
         s = want_bytes(salt)
         h = hashlib.new(algo, p + s)
