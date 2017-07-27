@@ -6,6 +6,7 @@ from __future__ import division, print_function
 import weakref
 from sqlalchemy import select
 
+
 class AbstractModel(object):
     """
     requiring implementation of get_resource_broker method
@@ -226,7 +227,7 @@ class AbstractModel(object):
             return
 
         o = cls(**dict(row))
-        o._update_cache()
+        o.update_cache()
         return o.mark_permanent()
 
     @classmethod
@@ -285,10 +286,10 @@ class AbstractModel(object):
             self._update(interface)
         else:
             self._insert(interface)
-        self._update_cache()
+        self.update_cache()
         return self.mark_permanent()
 
-    def _update_cache(self):
+    def update_cache(self):
         # TODO: expire key in cache
         pk = self.pk
         if pk is not None:
