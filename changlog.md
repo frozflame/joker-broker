@@ -2,6 +2,12 @@
 Change Log
 ----------
 
+#### 0.0.8
+
+* AbstractModel._update_cache -> AbstractModel.update_cache
+* remove AbstractModel.load_with 
+* new AbstractModel.find, returning objects in stead of pk
+
 #### 0.0.7
 
 * move MultiFernetWrapper away to joker.masquerade 
