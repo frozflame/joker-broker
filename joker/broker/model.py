@@ -246,6 +246,9 @@ class AbstractModel(object):
         if not multi:
             stmt = stmt.limit(1)
         objects = [cls(**dict(r)) for r in list(stmt.execute())]
+        for o in objects:
+            o.update_cache()
+            o.mark_permanent()
         if multi:
             return objects
         try:
