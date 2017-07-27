@@ -4,6 +4,7 @@ Change Log
 
 #### 0.0.9
 * AbstractModel.find: update_cache() and mark_permanet()
+* gen_random_string() now uses os.urandom, and is unexposed
 
 
 #### 0.0.8
