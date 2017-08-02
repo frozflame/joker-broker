@@ -1,4 +1,8 @@
-from joker.broker.resource import ResourceBroker
+#!/usr/bin/env python3
+# coding: utf-8
+
+
+from joker.broker.access import ResourceBroker
 
 
 __version__ = '0.0.9'
