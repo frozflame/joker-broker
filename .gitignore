@@ -12,6 +12,7 @@ __pycache__/
 .Python
 .idea/
 venv/
+venv-joker-broker/
 env/
 build/
 develop-eggs/
