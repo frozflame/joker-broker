@@ -2,10 +2,15 @@
 Changes
 =======
 
+#### 0.0.11
+* AbstractModel.find(.., many=, limit=, offset=)
+* add psycopg to requirements.txt
+
 
 #### 0.0.10
 * AbstractModel.delete: multiple primary keys
 * AbstractModel.delete_cache
+
 
 #### 0.0.9
 * AbstractModel.find: update_cache() and mark_permanet()
