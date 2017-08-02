@@ -5,7 +5,7 @@
 from joker.broker.access import ResourceBroker
 
 
-__version__ = '0.0.9'
+__version__ = '0.0.10'
 
 
 def setup_userdir():
