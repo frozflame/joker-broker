@@ -7,7 +7,7 @@ from joker.broker.model import AbstractModel
 from joker.broker import get_resource_broker
 
 
-class TestModel(AbstractModel):
+class User(AbstractModel):
     table = 'public.users'
 
     @classmethod

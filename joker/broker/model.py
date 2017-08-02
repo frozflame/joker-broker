@@ -4,6 +4,7 @@
 from __future__ import division, print_function
 
 import weakref
+from sqlalchemy import select
 
 
 class AbstractModel(object):
@@ -55,6 +56,10 @@ class AbstractModel(object):
     @classmethod
     def get_resource_broker(cls):
         raise NotImplementedError
+
+    def __repr__(self):
+        clsname = self.__class__.__name__
+        return '{}({})'.format(clsname, self.data)
 
     def __contains__(self, key):
         return (key in self._initial) or (key in self._changed)
@@ -230,25 +235,61 @@ class AbstractModel(object):
         return o.mark_permanent()
 
     @classmethod
-    def find(cls, kvpairs, multi=False, interface='primary'):
+    def find(cls, kvpairs, interface='primary', **kwargs):
         """
         :param kvpairs: dict,\
             e.g. {'name': 'alice', 'gender': 'female'}
-        :param multi: bool
         :param interface: str
-        :return: 
+        :param kwargs: see parameters
+
+        :parameter many: bool.
+            If true, return a list of objects instead of the 1st one
+        :parameter pkonly: bool
+            If true, return only the value of primary key
+
+        :parameter start: int
+        :parameter limit: int
+
+        :return:
         """
         tbl = cls.get_table(interface)
-        stmt = tbl.select()
+
+        # compatible to old version
+        many = kwargs.get('many') or kwargs.get('multi')
+        pkonly = kwargs.get('pkonly')
+
+        # pagination
+        limit = kwargs.get('limit')
+        offset = kwargs.get('offset')
+
+        # reduce db bandwidth cost if only pk is required
+        if pkonly:
+            stmt = select([getattr(tbl.c, cls.primary_key)])
+        else:
+            stmt = tbl.select()
+
         for k, v in kvpairs.items():
             stmt = stmt.where(getattr(tbl.c, k) == v)
-        if not multi:
+
+        if many:
+            if limit:
+                stmt = stmt.limit(limit)
+            if offset:
+                stmt = stmt.offset(offset)
+        else:
             stmt = stmt.limit(1)
-        objects = [cls(**dict(r)) for r in list(stmt.execute())]
-        for o in objects:
-            o.update_cache()
-            o.mark_permanent()
-        if multi:
+
+        rows = list(stmt.execute())
+
+        if pkonly:
+            objects = [getattr(r, cls.primary_key) for r in rows]
+        else:
+            objects = [cls(**dict(r)) for r in rows]
+            for o in objects:
+                o.update_cache()
+                o.mark_permanent()
+
+        if many:
             return objects
         try:
             return objects[0]
@@ -302,6 +343,7 @@ class AbstractModel(object):
             key = self.format_cache_key(pk)
             rb = self.get_resource_broker()
             rb.cache.json_set(key, self.data)
+        return self
 
     @classmethod
     def delete_cache(cls, *pklist):
