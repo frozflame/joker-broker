@@ -3,6 +3,17 @@
 
 from __future__ import division, print_function
 
+from joker.broker.model import AbstractModel
+from joker.broker import get_resource_broker
+
+
+class TestModel(AbstractModel):
+    table = 'public.users'
+
+    @classmethod
+    def get_resource_broker(cls):
+        return get_resource_broker()
+
 
 def test_model():
     pass

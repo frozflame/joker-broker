@@ -304,14 +304,19 @@ class AbstractModel(object):
             rb.cache.json_set(key, self.data)
 
     @classmethod
-    def delete(cls, pk, interface='primary'):
-        o = cls._loaded_instances.get((cls, pk))
-        if o is not None:
-            o.permament = False
+    def delete_cache(cls, *pklist):
+        names = [cls.format_cache_key(pk) for pk in pklist]
+        rb = cls.get_resource_broker()
+        rb.cache.delete(*names)
+
+    @classmethod
+    def delete(cls, *pklist, interface='primary'):
+        for pk in pklist:
+            o = cls._loaded_instances.get((cls, pk))
+            if o is not None:
+                o.permament = False
         tbl = cls.get_table(interface)
         pkc = getattr(tbl.c, cls.primary_key)
-        stmt = tbl.delete().where(pkc == pk)
+        stmt = tbl.delete().where(pkc.in_(pklist))
         stmt.execute()
-        key = cls.format_cache_key(pk)
-        rb = cls.get_resource_broker()
-        rb.cache.delete(key)
+        cls.delete_cache(*pklist)
