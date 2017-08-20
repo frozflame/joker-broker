@@ -1,4 +1,4 @@
-joker.broker
+joker-broker
 ============
 
 Access resources conveniently.

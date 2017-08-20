@@ -1,6 +1,6 @@
 
-Changes
-=======
+Changes of joker-broker
+=======================
 
 #### 0.0.11
 * AbstractModel.find(.., many=, limit=, offset=)
