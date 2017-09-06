@@ -1,5 +1,6 @@
-fakeredis
-joker-cast>=0.0.10
-pyyaml
 six
+pyyaml
+redis
+fakeredis
 sqlalchemy
+joker-cast>=0.0.10

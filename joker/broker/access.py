@@ -18,9 +18,9 @@ def _import_requirements():
     from joker.broker.interfaces.static import deserialize_conf
     from joker.broker.interfaces.static import GeneralInterface
     from joker.broker.interfaces.static import SecretInterface
-    from joker.broker.interfaces.redis import RedisInterface
-    from joker.broker.interfaces.redis import FakeRedisInterface
-    from joker.broker.interfaces.redis import NullRedisInterface
+    from joker.broker.interfaces.rediz import RedisInterface
+    from joker.broker.interfaces.rediz import FakeRedisInterface
+    from joker.broker.interfaces.rediz import NullRedisInterface
     return [
         GeneralInterface, SecretInterface, SQLInterface,
         RedisInterface, FakeRedisInterface, NullRedisInterface,
@@ -88,15 +88,15 @@ class ResourceBroker(object):
                 self.interfaces[name] = SQLInterface.from_conf(section)
 
             elif typ == 'redis':
-                from joker.broker.interfaces.redis import RedisInterface
+                from joker.broker.interfaces.rediz import RedisInterface
                 self.interfaces[name] = RedisInterface.from_conf(section)
 
             elif typ == 'fakeredis':
-                from joker.broker.interfaces.redis import FakeRedisInterface
+                from joker.broker.interfaces.rediz import FakeRedisInterface
                 self.interfaces[name] = FakeRedisInterface.from_conf(section)
 
             elif typ == 'nullredis':
-                from joker.broker.interfaces.redis import NullRedisInterface
+                from joker.broker.interfaces.rediz import NullRedisInterface
                 self.interfaces[name] = NullRedisInterface.from_conf(section)
 
     @classmethod
@@ -165,7 +165,7 @@ class ResourceBroker(object):
             # fallback to set-n-forget cache;
             # also making this property type-inferrable.
             # slow to import, so import when needed
-            from joker.broker.interfaces.redis import NullRedisInterface
+            from joker.broker.interfaces.rediz import NullRedisInterface
             si = NullRedisInterface()
             return self.interfaces.setdefault(name, si)
 

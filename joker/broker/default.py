@@ -71,3 +71,14 @@ def dump_as_yamlfile(path, data):
 
 def dump_default_conf(path=default_conf_path):
     dump_as_yamlfile(path, get_default_conf())
+
+
+def setup_joker_dir():
+    from joker.cast.locational import make_joker_dir
+    make_joker_dir()
+    dump_default_conf()
+
+
+if __name__ == '__main__':
+    setup_joker_dir()
+
