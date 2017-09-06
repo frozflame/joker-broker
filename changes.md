@@ -2,6 +2,10 @@
 Changes of joker-broker
 =======================
 
+#### 0.0.12
+* bug fix: nullredis from_url returns None
+
+
 #### 0.0.11
 * AbstractModel.find(.., many=, limit=, offset=)
 * add psycopg to requirements.txt

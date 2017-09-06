@@ -73,4 +73,4 @@ class NullRedisInterface(RedisInterfaceMixin):
 
     @classmethod
     def from_url(cls, url, **kwargs):
-        pass
+        return cls()
