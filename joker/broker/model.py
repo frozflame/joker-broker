@@ -352,13 +352,15 @@ class AbstractModel(object):
         rb.cache.delete(*names)
 
     @classmethod
-    def delete(cls, *pklist, interface='primary'):
+    def delete(cls, *pklist, **kwargs):
         for pk in pklist:
             o = cls._loaded_instances.get((cls, pk))
             if o is not None:
                 o.permament = False
+        interface = kwargs.get('interface', 'primary')
         tbl = cls.get_table(interface)
         pkc = getattr(tbl.c, cls.primary_key)
         stmt = tbl.delete().where(pkc.in_(pklist))
         stmt.execute()
         cls.delete_cache(*pklist)
+

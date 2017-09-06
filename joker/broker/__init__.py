@@ -2,20 +2,21 @@
 # coding: utf-8
 
 
-from joker.broker.access import ResourceBroker
+__version__ = '0.0.13'
 
 
-__version__ = '0.0.12'
-
-
-def setup_userdir():
+def setup_joker_dir():
+    from joker.cast.locational import make_joker_dir
     from joker.broker.userdefault import dump_default_conf
+    make_joker_dir()
     dump_default_conf()
 
 
 def get_resource_broker(path=None):
-    import os
-    from joker.broker import ResourceBroker
-    if not path:
-        path = os.path.expanduser('~/.joker/broker.yml')
-    return ResourceBroker.create(path)
+    from joker.broker.access import ResourceBroker
+    from joker.broker.userdefault import default_conf_path
+    return ResourceBroker.create(path or default_conf_path)
+
+
+if __name__ == '__main__':
+    setup_joker_dir()

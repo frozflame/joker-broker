@@ -2,9 +2,22 @@
 # coding: utf-8
 
 from __future__ import division, print_function
+
 import os
-import yaml
 from collections import OrderedDict
+
+import yaml
+from joker.cast.locational import under_joker_dir
+
+
+default_conf_path = under_joker_dir('broker.yml')
+
+
+def represent_odict(self, data):
+    return self.represent_mapping('tag:yaml.org,2002:map', data.items())
+
+
+yaml.add_representer(OrderedDict, represent_odict)
 
 
 def impose_order(dic, order):
@@ -17,63 +30,44 @@ def impose_order(dic, order):
     return OrderedDict(items)
 
 
-userdir_path = os.path.expanduser('~/.joker')
-
-default_conf = {
-    'cache': {
-        'type': 'redis',
-        'url': 'redis://127.0.0.1:6379/0',
-    },
-    'primary': {
-        'echo': 0,
-        'type': 'sql',
-        'url': 'postgresql://127.0.0.1:5432/postgres',
-    },
-    'secret': {
-        'type': 'secret',
-        'extensions': [],
-    },
-    'standby': {
-        'type': 'sql',
-        'echo': 0,
-        'url': 'postgresql://127.0.0.1:5432/postgres',
-    },
-    'lite': {
-        'type': 'sql',
-        'echo': 0,
-        'url': 'sqlite:///'
+def get_default_conf():
+    url = 'sqlite:///' + under_joker_dir('lite.db')
+    default_conf = {
+        'cache': {
+            'type': 'fakeredis',
+            'url': 'redis://127.0.0.1:6379/0',
+        },
+        'primary': {
+            'echo': 0,
+            'type': 'sql',
+            'url': url,
+        },
+        'standby': {
+            'type': 'sql',
+            'echo': 0,
+            'url': url,
+        },
+        'lite': {
+            'type': 'sql',
+            'echo': 0,
+            'url': url,
+        },
+        'secret': {
+            'type': 'secret',
+            'extensions': [],
+        },
     }
-}
-
-sections = [
-    'cache', 'lite', 'primary', 'standby', 'secret',
-]
+    sections = ['cache', 'lite', 'primary', 'standby', 'secret']
+    return impose_order(default_conf, sections)
 
 
-def represent_odict(self, data):
-    return self.represent_mapping('tag:yaml.org,2002:map', data.items())
-
-
-yaml.add_representer(OrderedDict, represent_odict)
-
-
-def make_userdir(path=userdir_path):
-    # silently return if path exists as a dir
-    if not os.path.isdir(path):
-        os.mkdir(path, mode=int('700', 8))
-
-
-def dump_as_yamlfile(path, data, order):
+def dump_as_yamlfile(path, data):
     if os.path.exists(path):
         raise FileExistsError(path)
-    s = yaml.dump(impose_order(data, order))
+    s = yaml.dump(data, default_flow_style=False)
     with open(path, 'w') as fout:
         fout.write(s)
 
 
-def dump_default_conf(path=None):
-    if path is None:
-        make_userdir()
-        path = os.path.join(userdir_path, 'broker.yml')
-    dump_as_yamlfile(path, default_conf, sections)
-
+def dump_default_conf(path=default_conf_path):
+    dump_as_yamlfile(path, get_default_conf())

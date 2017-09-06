@@ -1,6 +1,5 @@
 fakeredis
+joker-cast>=0.0.10
 pyyaml
 six
 sqlalchemy
-joker-cast>=0.0.3
-psycopg2
