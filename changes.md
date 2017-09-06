@@ -2,6 +2,10 @@
 Changes of joker-broker
 =======================
 
+#### 0.0.14
+* rename interfaces.redis to rediz (for python2 import error)
+* python -m joker.broker.default
+
 
 #### 0.0.13
 * remove psycopg2 from requirements
