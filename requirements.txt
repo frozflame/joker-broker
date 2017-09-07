@@ -1,6 +1,7 @@
+joker
+joker-cast>=0.0.10
 six
 pyyaml
 redis
 fakeredis
 sqlalchemy
-joker-cast>=0.0.10
