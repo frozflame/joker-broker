@@ -14,13 +14,13 @@ def _import_requirements():
     These imports are slow!
     """
     from joker.broker.security import HashedPath
+    from joker.broker.interfaces.rediz import RedisInterface
+    from joker.broker.interfaces.rediz import FakeRedisInterface
+    from joker.broker.interfaces.rediz import NullRedisInterface
     from joker.broker.interfaces.sequel import SQLInterface
     from joker.broker.interfaces.static import deserialize_conf
     from joker.broker.interfaces.static import GeneralInterface
     from joker.broker.interfaces.static import SecretInterface
-    from joker.broker.interfaces.rediz import RedisInterface
-    from joker.broker.interfaces.rediz import FakeRedisInterface
-    from joker.broker.interfaces.rediz import NullRedisInterface
     return [
         GeneralInterface, SecretInterface, SQLInterface,
         RedisInterface, FakeRedisInterface, NullRedisInterface,
