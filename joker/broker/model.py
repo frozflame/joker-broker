@@ -92,7 +92,13 @@ class AbstractModel(object):
             raise KeyError(m)
 
     def __getattr__(self, key):
-        return self.get(key)
+        p = getattr(self.__class__, key, None)
+        if isinstance(p, property):
+            if p.fget is None:
+                raise AttributeError("can't get attribute")
+            p.fget(self)
+        else:
+            return self.get(key)
 
     def __setattr__(self, key, value):
         p = getattr(self.__class__, key, None)
