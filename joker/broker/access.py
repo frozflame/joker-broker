@@ -99,6 +99,35 @@ class ResourceBroker(object):
                 from joker.broker.interfaces.rediz import NullRedisInterface
                 self.interfaces[name] = NullRedisInterface.from_conf(section)
 
+        if 'primary' in self.interfaces and 'standby' not in self.interfaces:
+            self.interfaces['standby'] = self.primary
+
+        engines = self._get_sqlalchemy_engines()
+        if engines['primary_engine'] is None:
+            self.session_cls = None
+        elif not engines['standby_engines']:
+            self.session_cls = self.primary.session_cls
+        else:
+            from sqlalchemy.orm import scoped_session, sessionmaker
+            from joker.broker.interfaces.sequel import RoutingSession
+            factory = sessionmaker(class_=RoutingSession, **engines)
+            self.session_cls = scoped_session(factory)
+
+    def _get_sqlalchemy_engines(self):
+        from joker.broker.interfaces.sequel import SQLInterface
+        primary_engine = self.primary.engine
+        standby_engines = []
+        for key, val in self.interfaces.items():
+            if not isinstance(val, SQLInterface):
+                continue
+            if key.lower().startswith('standby'):
+                standby_engines.append(val.engine)
+        return {
+            'primary_engine': primary_engine,
+            'standby_engines':
+                [x for x in standby_engines if x is not primary_engine]
+        }
+
     @classmethod
     def create(cls, path):
         conf = Conf.load(path)
@@ -122,7 +151,7 @@ class ResourceBroker(object):
     def __getitem__(self, interface_name):
         try:
             return self.interfaces[interface_name]
-        except:
+        except LookupError:
             msg = 'section "{}" not in your config file or mis-configured'
             msg = msg.format(interface_name)
             raise ResourceNotFoundError(msg)
@@ -169,8 +198,15 @@ class ResourceBroker(object):
             si = NullRedisInterface()
             return self.interfaces.setdefault(name, si)
 
-    # some preset interfaces: general, secret, cache, primary, standby, lite
+    def get_session(self):
+        """
+        Get a RoutingSession instance, which is modified from
+        http://docs.sqlalchemy.org/en/latest/orm/persistence_techniques.html
+        #custom-vertical-partitioning
+        """
+        return self.session_cls()
 
+    # some preset interfaces: general, secret, cache, primary, standby, lite
     @property
     def general(self):
         return self.get_general_interface('general')

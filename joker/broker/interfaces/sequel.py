@@ -4,10 +4,28 @@
 from __future__ import division, print_function
 
 import os
+import random
 import warnings
 
 from sqlalchemy import Table, MetaData, engine_from_config
 from sqlalchemy.exc import SAWarning
+from sqlalchemy.orm import Session, scoped_session, sessionmaker
+
+
+class RoutingSession(Session):
+    # http://docs.sqlalchemy.org/en/latest/orm/persistence_techniques.html
+    # #custom-vertical-partitioning
+    def __init__(self, primary_engine, standby_engines, **kwargs):
+        super(RoutingSession, self).__init__(**kwargs)
+        self.primary_engine = primary_engine
+        self.standby_engines = list(standby_engines)
+
+    def get_bind(self, mapper=None, clause=None):
+        # return self.bind
+        if self._flushing:
+            return self.primary_engine
+        else:
+            return random.choice(self.standby_engines)
 
 
 class SQLInterface(object):
@@ -18,6 +36,7 @@ class SQLInterface(object):
             self.metadata = MetaData(bind=self.engine, schema='public')
         else:
             self.metadata = MetaData(bind=self.engine)
+        self.session_cls = scoped_session(sessionmaker(bind=self.engine))
 
     def just_after_fork(self):
         """
@@ -71,6 +90,9 @@ class SQLInterface(object):
             mreg = '.*Predicate.*partial.*index.*reflection.*'
             warnings.filterwarnings('ignore', category=SAWarning, message=mreg)
             return Table(table_name, metadata, schema=schema, autoload=True)
+
+    def get_session(self):
+        return self.session_cls()
 
     def execute(self, *args, **kwargs):
         return self.engine.execute(*args, **kwargs)

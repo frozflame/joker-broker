@@ -2,6 +2,9 @@
 Changes of joker-broker
 =======================
 
+#### 0.1.0
+* use `sqlalchemy.orm` and session
+
 #### 0.0.14
 * rename interfaces.redis to rediz (for python2 import error)
 * python -m joker.broker.default

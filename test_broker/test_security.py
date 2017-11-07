@@ -32,11 +32,12 @@ def test_hashed_password():
 
 
 def test_guess_hash_algorithm():
-    for algo_name in hashlib.algorithms_guaranteed:
+    algos = ['md5', 'sha1', 'sha224', 'sha256', 'sha384', 'sha512']
+    for algo_name in algos:
+        print('algo_name =', algo_name)
         h = hashlib.new(algo_name)
         assert guess_hash_algorithm(h.digest()) == algo_name
         assert guess_hash_algorithm(h.hexdigest()) == algo_name
-        print(algo_name)
 
 
 if __name__ == '__main__':

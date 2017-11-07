@@ -1,2 +1,3 @@
 include requirements.txt
 include test_broker/*
+exclude test_broker/tmp/*

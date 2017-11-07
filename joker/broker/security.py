@@ -30,7 +30,7 @@ def guess_hash_algorithm(digest):
     if isinstance(digest, six.binary_type):
         try:
             digest = digest.decode('utf-8')
-        except:
+        except Exception:
             return algo_map.get(('bin', len(digest)))
     if not re.match(r'[0-9A-Fa-f]+', digest):
         return

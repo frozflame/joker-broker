@@ -20,7 +20,7 @@ standby_01:
 secret:
   type: 'secret'
   extensions:
-    - '/info/credents/secret.json'
+    - '/data/private/credents/secret.json'
 
   fernet:
     - "zwAdSdG1lAs2nHefWcyGf9loMXfTdTiqrz-Fgpe3kv4="
