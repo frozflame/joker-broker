@@ -2,6 +2,11 @@
 Changes of joker-broker
 =======================
 
+
+#### 0.1.2
+* apply `abc.abstractmethod` for `cls.get_resource_broker()`
+
+
 #### 0.1.1
 * `rb.standby` randomly pickup from `rb.standby_interfaces`
 
