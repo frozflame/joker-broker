@@ -92,7 +92,7 @@ class ResourceBroker(object):
             elif typ == 'sql':
                 from joker.broker.interfaces.sequel import SQLInterface
                 self.interfaces[name] = SQLInterface.from_conf(section)
-                if name.startswith('standby'):
+                if name.lower().startswith('standby'):
                     self.standby_interfaces.append(self.interfaces[name])
 
             elif typ == 'redis':
