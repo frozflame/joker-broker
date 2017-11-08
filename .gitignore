@@ -80,3 +80,5 @@ zombies/*
 
 # quick and dirty jobs
 run.sh
+test_broker/tmp/*
+test_broker/test_sess.py

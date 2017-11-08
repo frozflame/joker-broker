@@ -4,6 +4,7 @@
 from __future__ import division, print_function
 
 import os
+import random
 import weakref
 from collections import defaultdict
 
@@ -72,9 +73,14 @@ class ResourceBroker(object):
         # interfaces are slow to import, so import when needed
         self.conf = conf
         self.interfaces = dict()
+        self.standby_interfaces = []
+        section_names = list(conf.keys())
+        section_names.sort()
 
-        for name, section in conf.items():
+        for name in section_names:
+            section = conf[name]
             typ = section.get('type')
+
             if not typ or typ == 'general':
                 from joker.broker.interfaces.static import GeneralInterface
                 self.interfaces[name] = GeneralInterface.from_conf(section)
@@ -86,6 +92,8 @@ class ResourceBroker(object):
             elif typ == 'sql':
                 from joker.broker.interfaces.sequel import SQLInterface
                 self.interfaces[name] = SQLInterface.from_conf(section)
+                if name.startswith('standby'):
+                    self.standby_interfaces.append(self.interfaces[name])
 
             elif typ == 'redis':
                 from joker.broker.interfaces.rediz import RedisInterface
@@ -99,34 +107,17 @@ class ResourceBroker(object):
                 from joker.broker.interfaces.rediz import NullRedisInterface
                 self.interfaces[name] = NullRedisInterface.from_conf(section)
 
-        if 'primary' in self.interfaces and 'standby' not in self.interfaces:
-            self.interfaces['standby'] = self.primary
-
-        engines = self._get_sqlalchemy_engines()
-        if engines['primary_engine'] is None:
-            self.session_cls = None
-        elif not engines['standby_engines']:
-            self.session_cls = self.primary.session_cls
+        if ('primary' in self.interfaces) and self.standby_interfaces:
+                from sqlalchemy.orm import scoped_session, sessionmaker
+                from joker.broker.interfaces.sequel import RoutingSession
+                kwargs = {
+                    'primary_engine': self.primary.engine,
+                    'standby_engines': [x.engine for x in self.standby_interfaces],
+                }
+                factory = sessionmaker(class_=RoutingSession, **kwargs)
+                self.session_klass = scoped_session(factory)
         else:
-            from sqlalchemy.orm import scoped_session, sessionmaker
-            from joker.broker.interfaces.sequel import RoutingSession
-            factory = sessionmaker(class_=RoutingSession, **engines)
-            self.session_cls = scoped_session(factory)
-
-    def _get_sqlalchemy_engines(self):
-        from joker.broker.interfaces.sequel import SQLInterface
-        primary_engine = self.primary.engine
-        standby_engines = []
-        for key, val in self.interfaces.items():
-            if not isinstance(val, SQLInterface):
-                continue
-            if key.lower().startswith('standby'):
-                standby_engines.append(val.engine)
-        return {
-            'primary_engine': primary_engine,
-            'standby_engines':
-                [x for x in standby_engines if x is not primary_engine]
-        }
+            self.session_klass = self.primary.session_klass
 
     @classmethod
     def create(cls, path):
@@ -204,7 +195,7 @@ class ResourceBroker(object):
         http://docs.sqlalchemy.org/en/latest/orm/persistence_techniques.html
         #custom-vertical-partitioning
         """
-        return self.session_cls()
+        return self.session_klass()
 
     # some preset interfaces: general, secret, cache, primary, standby, lite
     @property
@@ -221,7 +212,9 @@ class ResourceBroker(object):
 
     @property
     def standby(self):
-        return self.get_sql_interface('standby')
+        if self.standby_interfaces:
+            return random.choice(self.standby_interfaces)
+        return self.primary
 
     @property
     def lite(self):

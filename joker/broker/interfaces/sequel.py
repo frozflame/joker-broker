@@ -36,7 +36,7 @@ class SQLInterface(object):
             self.metadata = MetaData(bind=self.engine, schema='public')
         else:
             self.metadata = MetaData(bind=self.engine)
-        self.session_cls = scoped_session(sessionmaker(bind=self.engine))
+        self.session_klass = scoped_session(sessionmaker(bind=self.engine))
 
     def just_after_fork(self):
         """
@@ -92,7 +92,7 @@ class SQLInterface(object):
             return Table(table_name, metadata, schema=schema, autoload=True)
 
     def get_session(self):
-        return self.session_cls()
+        return self.session_klass()
 
     def execute(self, *args, **kwargs):
         return self.engine.execute(*args, **kwargs)

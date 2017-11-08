@@ -14,7 +14,12 @@ standby:
 
 standby_01:
   type: 'sql'
-  url: 'postgresql://127.0.0.1:5432/postgres'
+  url: 'postgresql://127.0.0.1:5432/test1'
+  echo: 0
+
+standby_02:
+  type: 'sql'
+  url: 'postgresql://127.0.0.1:5432/test2'
   echo: 0
 
 secret:
