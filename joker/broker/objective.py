@@ -3,28 +3,36 @@
 
 from __future__ import division, unicode_literals
 
+import abc
 import datetime
 from decimal import Decimal
 
-from sqlalchemy import MetaData
-from sqlalchemy.ext.declarative import declarative_base
-
-metadata = MetaData()
-DeclarBase = declarative_base(metadata=metadata)
+import six
+from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
 
 
-class NoncachedBase(DeclarBase):
+class DeclABCMeta(abc.ABCMeta, DeclarativeMeta):
+    pass
+
+
+DeclBase = declarative_base(metaclass=DeclABCMeta)
+
+
+@six.add_metaclass(abc.ABCMeta)
+class NoncachedBase(DeclBase):
     __abstract__ = True
 
     def __repr__(self):
         c = self.__class__.__name__
+        # TODO: what if primary key is not 'id' or contains multiple columns
+        i = getattr(self, 'id', None)
         a = hex(id(self))
-        return '<{}(id={}) at {}>'.format(c, self.id, a)
+        return '<{}(id={}) at {}>'.format(c, i, a)
 
     @classmethod
+    @abc.abstractmethod
     def get_resource_broker(cls):
-        from joker.broker import get_resource_broker
-        return get_resource_broker()
+        raise NotImplementedError
 
     def as_json_serializable(self):
         result = {}
@@ -77,6 +85,7 @@ class NoncachedBase(DeclarBase):
         pass
 
 
+@six.add_metaclass(abc.ABCMeta)
 class CachedBase(NoncachedBase):
     __abstract__ = True
 
@@ -89,4 +98,12 @@ class CachedBase(NoncachedBase):
     @property
     def cache_key(self):
         return self.format_cache_key(self.id)
+
+    @classmethod
+    def load(cls, ident):
+        rb = cls.get_resource_broker()
+        d = rb.cache.json_get(cls.format_cache_key(ident))
+        if d is None:
+            return super(CachedBase).load(ident)
+        return cls.unserialize_from(d)
 
