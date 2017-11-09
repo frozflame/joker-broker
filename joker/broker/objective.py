@@ -42,10 +42,15 @@ class NoncachedBase(DeclBase):
     def get_resource_broker(cls):
         raise NotImplementedError
 
-    def as_json_serializable(self):
+    def as_json_serializable(self, fields=None):
         result = {}
-        for col in self.__table__.columns:
-            key = col.name
+        names = {c.name for c in self.__table__.columns}
+        if fields is None:
+            fields = names
+        else:
+            fields = set(fields).intersection(names)
+
+        for key in fields:
             val = getattr(self, key)
             if isinstance(val, datetime.datetime):
                 result[key] = {
