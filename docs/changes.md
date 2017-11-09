@@ -2,6 +2,10 @@
 Changes of joker-broker
 =======================
 
+#### 0.1.3
+* `as_json_serializable` support fields selection
+* `joker.cast.represent` for __repr__
+* add `NoncachedBase.load_many()`
 
 #### 0.1.2
 * apply `abc.abstractmethod` for `cls.get_resource_broker()`
