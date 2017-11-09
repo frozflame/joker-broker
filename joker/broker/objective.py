@@ -8,6 +8,7 @@ import datetime
 from decimal import Decimal
 
 import six
+from joker.cast import represent
 from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
 
 
@@ -23,11 +24,18 @@ class NoncachedBase(DeclBase):
     __abstract__ = True
 
     def __repr__(self):
-        c = self.__class__.__name__
-        # TODO: what if primary key is not 'id' or contains multiple columns
-        i = getattr(self, 'id', None)
-        a = hex(id(self))
-        return '<{}(id={}) at {}>'.format(c, i, a)
+        fields = [c.name for c in self.__table__.primary_key]
+        return represent(self, fields)
+
+    @classmethod
+    def load(cls, ident):
+        rb = cls.get_resource_broker()
+        session = rb.get_session()
+        return session.query(cls).get(ident)
+
+    @classmethod
+    def load_many(cls, idents):
+        return [cls.load(x) for x in idents]
 
     @classmethod
     @abc.abstractmethod
@@ -75,15 +83,6 @@ class NoncachedBase(DeclBase):
                 params[key] = val
         return cls(**params)
 
-    @classmethod
-    def load(cls, ident):
-        rb = cls.get_resource_broker()
-        session = rb.get_session()
-        return session.query(cls).get(ident)
-
-    def save(self):
-        pass
-
 
 @six.add_metaclass(abc.ABCMeta)
 class CachedBase(NoncachedBase):
@@ -106,4 +105,3 @@ class CachedBase(NoncachedBase):
         if d is None:
             return super(CachedBase).load(ident)
         return cls.unserialize_from(d)
-

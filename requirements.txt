@@ -1,5 +1,5 @@
 joker
-joker-cast>=0.0.10
+joker-cast>=0.0.11
 six
 pyyaml
 redis
