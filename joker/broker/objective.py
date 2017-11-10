@@ -84,3 +84,6 @@ class DeclBase(declarative_base()):
             else:
                 params[key] = val
         return cls(**params)
+
+
+__all__ = ['DeclBase']
