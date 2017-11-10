@@ -2,9 +2,13 @@
 Changes of joker-broker
 =======================
 
+#### 0.1.4
+* follow [this rule][1] and keep session away from Model
+* unify NoncachedBase and CachedBase into DeclBase
+
 #### 0.1.3
 * `as_json_serializable` support fields selection
-* `joker.cast.represent` for __repr__
+* `joker.cast.represent` for `NoncachedBase.__repr__`
 * add `NoncachedBase.load_many()`
 
 #### 0.1.2
@@ -17,3 +21,6 @@ Changes of joker-broker
 
 #### 0.1.0
 * use `sqlalchemy.orm` and session
+
+
+[1] http://docs.sqlalchemy.org/en/latest/orm/session_basics.html#when-do-i-construct-a-session-when-do-i-commit-it-and-when-do-i-close-it
