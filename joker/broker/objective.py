@@ -10,6 +10,40 @@ from joker.cast import represent
 from sqlalchemy.ext.declarative import declarative_base
 
 
+class Toolbox(object):
+    """
+    Base class for Viewmodels
+        just remove the need to pass session obj for every func
+    """
+    def __init__(self, session, cache=None):
+        """
+        :type session: sqlalchemy.orm.Session
+        :param session:
+        :type cache: joker.broker.interfaces.rediz.RedisInterfaceMixin
+        :param cache:
+        """
+        self.cache = cache
+        self.session = session
+
+    def persist(self, *items):
+        """
+        :param items: a series of DeclBase derived instance
+        """
+        for o in items:
+            self.session.add(o)
+        try:
+            self.session.commit()
+        except Exception:
+            self.session.rollback()
+            raise
+        finally:
+            self.session.close()
+
+        if self.cache is not None:
+            pairs = [(x.cache_key, x) for x in items]
+            self.cache.json_set_many(pairs)
+
+
 class DeclBase(declarative_base()):
     __abstract__ = True
 
@@ -86,4 +120,4 @@ class DeclBase(declarative_base()):
         return cls(**params)
 
 
-__all__ = ['DeclBase']
+__all__ = ['DeclBase', 'Toolbox']

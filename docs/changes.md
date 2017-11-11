@@ -3,6 +3,9 @@ Changes of joker-broker
 =======================
 
 #### 0.1.4
+* redis set and get many items using pipeline
+
+#### 0.1.4
 * follow [this rule][1] and keep session away from Model
 * unify NoncachedBase and CachedBase into DeclBase
 
