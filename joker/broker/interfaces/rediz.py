@@ -3,10 +3,7 @@
 
 from __future__ import division, print_function
 
-import json
-
 from fakeredis import FakeStrictRedis
-from joker.cast.serialize import JSONEncoderExtended
 from redis import StrictRedis
 
 
@@ -28,48 +25,32 @@ def want_str(s, *args, **kwargs):
 
 
 class RedisInterfaceMixin(object):
-    def json_set(self, name, obj, **kwargs):
-        value = json.dumps(obj, cls=JSONEncoderExtended)
-        self.set(name, value, **kwargs)
-
-    def json_set_many(self, pairs, **kwargs):
+    def set_many(self, kvpairs, **kwargs):
         """
-        :param pairs: a series of 2-tuples
+        :param kvpairs: a series of 2-tuples
         :param kwargs:
         """
-        pipe = getattr(self, 'pipeline')()
-        for name, obj in pairs:
-            value = json.dumps(obj, cls=JSONEncoderExtended)
+        pipe = self.pipeline()
+        for name, value in kvpairs:
             pipe.set(name, value, **kwargs)
         pipe.execute()
 
-    def json_get(self, name):
-        value = self.get(name)
-        if value is None:
-            return None
-        return json.loads(want_str(value, 'utf-8'))
-
-    def json_get_many(self, names):
-        pipe = getattr(self, 'pipeline')()
-        names = list(names)
+    def get_many(self, names):
+        pipe = self.pipeline()
         for name in names:
             pipe.get(name)
         values = pipe.execute()
         if not values:
             return [None for _ in names]
-        objects = []
-        for v in values:
-            if v is None:
-                objects.append(None)
-            else:
-                v = want_str(v, 'utf-8')
-                objects.append(json.loads(v))
-        return objects
+        return values
 
     def get(self, name):
         raise NotImplementedError
 
     def set(self, name, value, **kwargs):
+        raise NotImplementedError
+
+    def pipeline(self, *args, **kwargs):
         raise NotImplementedError
 
     @classmethod
