@@ -2,7 +2,11 @@
 Changes of joker-broker
 =======================
 
-#### 0.1.4
+#### 0.1.6
+* objective.Toolbox from a ResourceBroker instance
+* DeclBase.load_many from cache pipeline and single sql execution
+
+#### 0.1.5
 * redis set and get many items using pipeline
 
 #### 0.1.4
