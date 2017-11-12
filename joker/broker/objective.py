@@ -4,10 +4,25 @@
 from __future__ import division, unicode_literals
 
 import datetime
+import json
 from decimal import Decimal
 
 from joker.cast import represent
+from sqlalchemy import tuple_
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.inspection import inspect
+
+
+def _unflatten(obj):
+    if isinstance(obj, tuple):
+        return obj
+    return obj,
+
+
+def _flatten(tup):
+    if isinstance(tup, tuple) and len(tup) == 1:
+        return tup[0]
+    return tup
 
 
 class Toolbox(object):
@@ -15,15 +30,19 @@ class Toolbox(object):
     Base class for Viewmodels
         just remove the need to pass session obj for every func
     """
-    def __init__(self, session, cache=None):
+    def __init__(self, resource_broker, session=None):
         """
+        :type resource_broker: joker.broker.access.ResourceBroker
+        :param resource_broker:
         :type session: sqlalchemy.orm.Session
         :param session:
-        :type cache: joker.broker.interfaces.rediz.RedisInterfaceMixin
-        :param cache:
         """
-        self.cache = cache
-        self.session = session
+        self.rb = resource_broker
+        self.cache = resource_broker.cache
+        if session is None:
+            self.session = resource_broker.get_session()
+        else:
+            self.session = session
 
     def persist(self, *items):
         """
@@ -36,12 +55,10 @@ class Toolbox(object):
         except Exception:
             self.session.rollback()
             raise
-        finally:
-            self.session.close()
 
         if self.cache is not None:
-            pairs = [(x.cache_key, x) for x in items]
-            self.cache.json_set_many(pairs)
+            kvpairs = [(x.cache_key, x.serialize()) for x in items]
+            self.cache.set_many(kvpairs)
 
 
 class DeclBase(declarative_base()):
@@ -51,27 +68,52 @@ class DeclBase(declarative_base()):
         fields = [c.name for c in self.__table__.primary_key]
         return represent(self, fields)
 
+    def get_identity(self, flat=True):
+        identity = inspect(self).identity
+        if flat:
+            identity = _flatten(identity)
+        return identity
+
     @classmethod
-    def format_cache_key(cls, pk):
+    def format_cache_key(cls, ident):
         c = cls.__name__
         t = cls.__table__.name
-        return '{}:{}:{}'.format(c, t, pk)
+        x = '_'.join(str(i) for i in _unflatten(ident))
+        return '{}:{}:{}'.format(c, t, x)
 
     @property
     def cache_key(self):
-        return self.format_cache_key(self.id)
+        return self.format_cache_key(self.get_identity(flat=False))
 
     @classmethod
     def load(cls, ident, session, cache=None):
         if cache is not None:
-            serialized = cache.json_get(cls.format_cache_key(ident))
-            if serialized:
-                return cls.unserialize_from(serialized)
+            string = cache.get(cls.format_cache_key(ident))
+            if string:
+                return cls.unserialize(string)
         return session.query(cls).get(ident)
 
     @classmethod
     def load_many(cls, idents, session, cache=None):
-        return [cls.load(x, session, cache=cache) for x in idents]
+        idents = [_unflatten(it) for it in idents]
+
+        if cache is not None:
+            names = [cls.format_cache_key(it) for it in idents]
+            values = cache.get_many(names)
+            pairs = zip(idents, values)
+            results = {it: v for (it, v) in pairs if it is not None}
+            remainders = [it for it in idents if it not in results]
+        else:
+            results = dict()
+            remainders = idents
+
+        if remainders:
+            tbl = cls.__table__
+            cond = tuple_(*tbl.primary_key).in_(remainders)
+            query = session.query(cls).filter(cond)
+            for o in query.all():
+                results[o.get_identity(flat=False)] = o
+        return [results.get(it) for it in idents]
 
     def as_json_serializable(self, fields=None):
         result = {}
@@ -102,10 +144,15 @@ class DeclBase(declarative_base()):
                 result[key] = val
         return result
 
+    def serialize(self):
+        dikt = self.as_json_serializable()
+        return json.dumps(dikt)
+
     @classmethod
-    def unserialize_from(cls, dic):
+    def unserialize(cls, string, asdict=False):
+        dikt = json.loads(string)
         params = {}
-        for key, val in dic.items():
+        for key, val in dikt.items():
             if isinstance(val, dict) and '__type__' in val:
                 if val["__type__"] == "datetime":
                     a = val['value'], "%Y-%m-%d %H:%M:%S"
@@ -117,6 +164,8 @@ class DeclBase(declarative_base()):
                     params[key] = Decimal(val["value"])
             else:
                 params[key] = val
+        if asdict:
+            return params
         return cls(**params)
 
 
