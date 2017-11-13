@@ -9,7 +9,8 @@ from sqlalchemy import select
 
 class AbstractModel(object):
     """
-    Will be DEPRECATED!
+    Will be DEPRECATED in 0.3.x!
+
     Just use SQLAlchemy's ORM
     requiring implementation of get_resource_broker method
 
