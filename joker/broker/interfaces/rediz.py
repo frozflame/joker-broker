@@ -4,6 +4,7 @@
 from __future__ import division, print_function
 
 import random
+
 from fakeredis import FakeStrictRedis
 from redis import StrictRedis
 
@@ -47,7 +48,7 @@ class RedisInterfaceMixin(object):
 
     def rekom_getsetnx(self, name, value):
         # https://groups.google.com/d/msg/redis-db/QM15DH3SI6I/euJpdYJHTrcJ
-        tmp_name = '_rekom_getsetnx_{}'.format(random.randint(1, 2**60))
+        tmp_name = '_rekom_getsetnx_{}'.format(random.randint(1, 2 ** 60))
         pipe = self.pipeline()
         pipe.get(name)
         pipe.set(tmp_name, value)
@@ -108,4 +109,3 @@ class NullRedisInterface(RedisInterfaceMixin):
     def execute(self):
         """syntax sugar"""
         pass
-
