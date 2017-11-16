@@ -230,6 +230,6 @@ class ResourceBroker(object):
         return self.get_redis_interface('cache')
 
     @property
-    def kvstore(self):
+    def store(self):
         """Intend to be a non-volatile (persisting) redis instance"""
-        return self.get_redis_interface('kvstore')
+        return self.get_redis_interface('store')
