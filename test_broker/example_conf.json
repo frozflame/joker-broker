@@ -1,22 +1,26 @@
 {
+    "cache": {
+        "type": "redis",
+        "url": "redis://127.0.0.1:6379/0"
+    },
+    "kvstore": {
+        "type": "redis",
+        "url": "redis://127.0.0.1:6379/1"
+    },
     "primary": {
         "type": "sql",
         "url": "postgresql://127.0.0.1:5432/postgres",
         "echo": false
-    },
-    "standby": {
-        "type": "sql",
-        "url": "postgresql://127.0.0.1:5432/postgres",
-        "echo": true
     },
     "standby_01": {
         "type": "sql",
         "url": "postgresql://127.0.0.1:5432/postgres",
         "echo": true
     },
-    "cache": {
-        "type": "redis",
-        "url": "redis://127.0.0.1:6379/0"
+    "standby_02": {
+        "type": "sql",
+        "url": "postgresql://127.0.0.1:5432/postgres",
+        "echo": true
     },
     "secret": {
         "type": "secret",

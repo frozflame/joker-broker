@@ -197,7 +197,8 @@ class ResourceBroker(object):
         """
         return self.session_klass()
 
-    # some preset interfaces: general, secret, cache, primary, standby, lite
+    # some preset interfaces:
+    # general, secret, primary, standby, lite, cache, kvstore
     @property
     def general(self):
         return self.get_general_interface('general')
@@ -208,18 +209,27 @@ class ResourceBroker(object):
 
     @property
     def primary(self):
+        """Intend to be a standby (slave) RDB instance"""
         return self.get_sql_interface('primary')
 
     @property
     def standby(self):
+        """Intend to be a standby (slave) RDB instance"""
         if self.standby_interfaces:
             return random.choice(self.standby_interfaces)
         return self.primary
 
     @property
     def lite(self):
+        """Intend to be a single file SQLite instance"""
         return self.get_sql_interface('lite')
 
     @property
     def cache(self):
+        """Intend to be a volatile redis instance"""
         return self.get_redis_interface('cache')
+
+    @property
+    def kvstore(self):
+        """Intend to be a non-volatile (persisting) redis instance"""
+        return self.get_redis_interface('kvstore')
