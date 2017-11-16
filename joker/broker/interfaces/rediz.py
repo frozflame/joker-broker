@@ -3,6 +3,7 @@
 
 from __future__ import division, print_function
 
+import random
 from fakeredis import FakeStrictRedis
 from redis import StrictRedis
 
@@ -43,6 +44,17 @@ class RedisInterfaceMixin(object):
         if not values:
             return [None for _ in names]
         return values
+
+    def rekom_getsetnx(self, name, value):
+        # https://groups.google.com/d/msg/redis-db/QM15DH3SI6I/euJpdYJHTrcJ
+        tmp_name = '_rekom_getsetnx_{}'.format(random.randint(1, 2**60))
+        pipe = self.pipeline()
+        pipe.get(name)
+        pipe.set(tmp_name, value)
+        pipe.renamenx(tmp_name, name)
+        pipe.delete(tmp_name)
+        results = pipe.execute()
+        return results[0]
 
     def get(self, name):
         raise NotImplementedError
