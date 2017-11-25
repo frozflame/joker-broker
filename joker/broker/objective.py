@@ -25,6 +25,14 @@ def _flatten(tup):
     return tup
 
 
+def commit_or_rollback(session):
+    try:
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+
+
 class Toolbox(object):
     """
     Base class for Viewmodels
@@ -44,18 +52,16 @@ class Toolbox(object):
         else:
             self.session = session
 
+    def commit_or_rollback(self):
+        commit_or_rollback(self.session)
+
     def persist(self, *items):
         """
         :param items: a series of DeclBase derived instance
         """
         for o in items:
             self.session.add(o)
-        try:
-            self.session.commit()
-        except Exception:
-            self.session.rollback()
-            raise
-
+        self.commit_or_rollback()
         if self.cache is not None:
             kvpairs = [(x.cache_key, x.serialize()) for x in items]
             self.cache.set_many(kvpairs)
@@ -84,6 +90,12 @@ class DeclBase(declarative_base()):
     @property
     def cache_key(self):
         return self.format_cache_key(self.get_identity(flat=False))
+
+    def save(self, session, cache=None):
+        if cache is not None:
+            cache.set(self.cache_key, self.serialize())
+        session.add(self)
+        commit_or_rollback(session)
 
     @classmethod
     def load(cls, ident, session, cache=None):
