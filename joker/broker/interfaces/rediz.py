@@ -4,21 +4,19 @@
 from __future__ import division, print_function
 
 import random
+from collections import OrderedDict
 
 from fakeredis import FakeStrictRedis
 from redis import StrictRedis
-
-
-def pass_(*args, **kwargs):
-    # TODO: move to joker.cast
-    return args, kwargs
+from joker.cast import represent
+from joker.cast.syntax import noop
 
 
 def want_str(s, *args, **kwargs):
     """
     :param s:
     :param args: positional arguments passed to s.decode(..)
-    :param kwargs: key word arguments passed to s.decode(..)
+    :param kwargs: keyword arguments passed to s.decode(..)
     :return:
     """
     if not isinstance(s, str):
@@ -81,31 +79,41 @@ class RedisInterfaceMixin(object):
 
 
 class RedisInterface(StrictRedis, RedisInterfaceMixin):
-    pass
+    def __repr__(self):
+        pool = getattr(self, 'connection_pool')
+        kwargs = getattr(pool, 'connection_kwargs', {})
+        params = OrderedDict([
+            ('host', kwargs.get('host')),
+            ('port', kwargs.get('port')),
+            ('db', kwargs.get('db')),
+        ])
+        return represent(self, params)
 
 
 class FakeRedisInterface(FakeStrictRedis, RedisInterfaceMixin):
-    pass
+    def __repr__(self):
+        return represent(self, {'db': self._db_num})
 
 
 class NullRedisInterface(RedisInterfaceMixin):
-    def __init__(self, *a, **kw):
+    get = noop
+    set = noop
+    # syntax sugar for pipeline
+    execute = noop
+
+    def __init__(self, *args, **kwargs):
         pass
 
-    def get(self, name):
-        pass
+    def __repr__(self):
+        return represent(self, {})
 
-    def set(self, name, value, **kwargs):
-        pass
+    def __getattr__(self, _):
+        return noop
 
-    def pipeline(self, *args, **kwargs):
-        pass_(args, kwargs)
+    def pipeline(self, *_, **__):
         return self
 
     @classmethod
     def from_url(cls, url, **kwargs):
         return cls()
 
-    def execute(self):
-        """syntax sugar"""
-        pass
