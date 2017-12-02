@@ -2,6 +2,8 @@
 Changes of joker-broker
 =======================
 
+### 0.1.10
+* add locate_standard_conf()
 
 ### 0.1.8
 * RedisInterface.rekom_getsetx()

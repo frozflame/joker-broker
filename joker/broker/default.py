@@ -7,9 +7,27 @@ import os
 from collections import OrderedDict
 
 import yaml
-from joker.cast.locational import under_joker_dir
+from joker.cast.locational import under_joker_dir, under_package_dir
 
 default_conf_path = under_joker_dir('broker.yml')
+
+
+def locate_standard_conf(package):
+    name = package.__name__
+    workdirs = [os.environ.get('{}_WORKDIR'.format(name.upper()))]
+    if workdirs[0] is None:
+        workdirs = [
+            '/data/{}/'.format(name),
+            os.path.expanduser('~/.{}'.format(name)),
+            under_package_dir(package, '../workdir_{}'.format(name)),
+        ]
+        workdirs = [d for d in workdirs if os.path.isdir(d)]
+
+    for d in workdirs:
+        p = os.path.join(d, 'configs/{}.yml'.format(name))
+        if p and os.path.isfile(p):
+            return p
+    raise ValueError('config file not found')
 
 
 def represent_odict(self, data):
