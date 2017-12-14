@@ -8,7 +8,7 @@ import json
 from decimal import Decimal
 
 from joker.cast import represent
-from sqlalchemy import tuple_
+from sqlalchemy import select, tuple_, and_
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.inspection import inspect
 
@@ -179,6 +179,66 @@ class DeclBase(declarative_base()):
         if asdict:
             return params
         return cls(**params)
+
+    @classmethod
+    def find(cls, cond, session, form='o', **kwargs):
+        """
+        :type cond: whereclause / dict
+        :param cond: e.g. {'name': 'alice', 'gender': 'female'}
+
+        :type session: sqlalchemy.orm.Session
+        :param session:
+
+        :type form: str
+        :param form: ('o', 'p', 'd' or 'i') form of each record found
+        'o' for model object (the bound class of this method),
+        'd' for dict
+        'p' for sqlalchemy.engine.result.RowProxy,
+        'i' for identity (primary key value)
+
+        :parameter start: pagination offset, int, default 0
+        :parameter limit: pagination limit, int, default 1000
+        :parameter order: sqalchemy clauses
+        """
+        allowed_forms = {'o', 'p', 'd', 'i'}
+        if form not in allowed_forms:
+            msg = 'form must be chosen from {}'.format(allowed_forms)
+            raise ValueError(msg)
+
+        tbl = cls.__table__
+        order = kwargs.get('order', tuple(tbl.primary_key))
+        start = kwargs.get('start', 0)
+        limit = kwargs.get('limit', 1000)
+
+        # reduce db bandwidth cost if only pk is required
+        if form == 'i':
+            stmt = select(tbl.primary_key)
+        else:
+            stmt = tbl.select()
+
+        if isinstance(cond, dict):
+            expressions = list()
+            for k, v in cond.items():
+                expressions.append(getattr(tbl.c, k) == v)
+            cond = and_(*expressions)
+        stmt = stmt.where(cond)
+        if isinstance(order, (list, tuple)):
+            stmt = stmt.order_by(*order)
+        else:
+            stmt = stmt.order_by(order)
+        stmt = stmt.limit(limit)
+        if start:
+            stmt = stmt.offset(start)
+        rows = list(session.execute(stmt))
+        if form == 'p':
+            return rows
+        if form == 'i':
+            return [_flatten(tuple(r)) for r in rows]
+        if form == 'o':
+            return [cls(**dict(r)) for r in rows]
+        if form == 'd':
+            return [dict(r) for r in rows]
+        return rows
 
 
 __all__ = ['DeclBase', 'Toolbox']
