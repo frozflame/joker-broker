@@ -3,7 +3,7 @@
 
 from __future__ import division, print_function
 
-from joker.cast.syntax import fmt_function_path
+from joker.cast.syntax import format_function_path
 
 
 class CheckZone(object):
@@ -32,7 +32,7 @@ class CheckZone(object):
             retval = func(*args, **kwargs)
             if self._checker(retval):
                 continue
-            p = fmt_function_path(func)
+            p = format_function_path(func)
             m = 'introspect failed at {}'.format(p)
             raise RuntimeError(m)
         if clear:

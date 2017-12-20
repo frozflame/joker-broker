@@ -2,6 +2,10 @@
 Changes of joker-broker
 =======================
 
+### 0.1.11
+* add DeclBase.find(), DeclBase.create_all_tables()
+
+
 ### 0.1.10
 * add locate_standard_conf()
 
@@ -39,7 +43,7 @@ Changes of joker-broker
 * add `NoncachedBase.load_many()`
 
 
-### 0.1.2
+### 0.1.2cc
 * apply `abc.abstractmethod` for `cls.get_resource_broker()`
 
 

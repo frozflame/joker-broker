@@ -181,6 +181,14 @@ class DeclBase(declarative_base()):
         return cls(**params)
 
     @classmethod
+    def create_all_tables(cls, engine):
+        meta = cls.metadata
+        for schema in {t.schema for t in meta.tables.values()}:
+            sql = 'CREATE SCHEMA IF NOT EXISTS "{}";'.format(schema)
+            engine.execute(sql)
+        meta.create_all(bind=engine)
+
+    @classmethod
     def find(cls, cond, session, form='o', **kwargs):
         """
         :type cond: whereclause / dict
