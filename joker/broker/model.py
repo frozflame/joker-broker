@@ -3,7 +3,9 @@
 
 from __future__ import division, print_function
 
+import warnings
 import weakref
+
 from sqlalchemy import select
 
 
@@ -373,3 +375,9 @@ class AbstractModel(object):
         stmt.execute()
         cls.delete_cache(*pklist)
 
+
+warnings.simplefilter("once", DeprecationWarning)
+warnings.warn(DeprecationWarning(
+        "use joker.broker.objective.DeclBase instead"
+    )
+)

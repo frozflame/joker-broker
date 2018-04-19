@@ -2,6 +2,10 @@
 Changes of joker-broker
 =======================
 
+### 0.1.12
+* warns importing joker.broker.model
+* DeclBase.representation_columns
+
 ### 0.1.11
 * add DeclBase.find(), DeclBase.create_all_tables()
 
