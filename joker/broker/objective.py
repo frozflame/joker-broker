@@ -69,8 +69,11 @@ class Toolbox(object):
 
 class DeclBase(declarative_base()):
     __abstract__ = True
+    representation_columns = []
 
     def __repr__(self):
+        if self.representation_columns:
+            return represent(self, self.representation_columns)
         fields = [c.name for c in self.__table__.primary_key]
         return represent(self, fields)
 
