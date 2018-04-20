@@ -29,12 +29,15 @@ def _import_requirements():
     ]
 
 
-def default_factory():
-    return defaultdict(default_factory)
+def _factory():
+    return defaultdict(_factory)
 
 
 class Conf(defaultdict):
     cached_instances = weakref.WeakValueDictionary()
+
+    def __init__(self, *args, **kwargs):
+        super(Conf, self).__init__(_factory, *args, **kwargs)
 
     @classmethod
     def load(cls, path):
@@ -50,7 +53,7 @@ class Conf(defaultdict):
 
         # parse from conf file
         from joker.broker.interfaces.static import deserialize_conf
-        conf = cls(default_factory, deserialize_conf(path))
+        conf = cls(deserialize_conf(path))
 
         # Note: not cls.loaded_confs.
         # All sub-classes use the same dict
