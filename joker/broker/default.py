@@ -7,19 +7,22 @@ import os
 from collections import OrderedDict
 
 import yaml
-from joker.cast.locational import under_joker_dir, under_package_dir
+from joker.cast.locational import under_joker_dir
 
 default_conf_path = under_joker_dir('broker.yml')
 
 
 def locate_standard_conf(package):
-    name = package.__name__
+    # a string is also acceptable
+    name = getattr(package, '__name__', package)
     workdirs = [os.environ.get('{}_WORKDIR'.format(name.upper()))]
+
+    # look for ~/.<package> and /data/<package>
+    # ONLY IF <package>_WORKDIR is not set
     if workdirs[0] is None:
         workdirs = [
-            '/data/{}/'.format(name),
             os.path.expanduser('~/.{}'.format(name)),
-            under_package_dir(package, '../workdir_{}'.format(name)),
+            '/data/{}/'.format(name),
         ]
         workdirs = [d for d in workdirs if os.path.isdir(d)]
 
@@ -98,4 +101,3 @@ def setup_joker_dir():
 
 if __name__ == '__main__':
     setup_joker_dir()
-
