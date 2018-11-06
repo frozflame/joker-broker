@@ -1,7 +1,7 @@
-joker
+fakeredis
 joker-cast>=0.0.11
-six
+joker>=0.1.0
 pyyaml
 redis
-fakeredis
+six
 sqlalchemy
