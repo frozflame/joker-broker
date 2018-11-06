@@ -1,42 +1,41 @@
-
 cache:
-  type: 'redis'
-  url: 'redis://127.0.0.1:6379/0'
+    type: 'redis'
+    url: 'redis://127.0.0.1:6379/0'
 
 store:
-  type: 'redis'
-  url: 'redis://127.0.0.1:6379/1'
+    type: 'redis'
+    url: 'redis://127.0.0.1:6379/1'
 
 primary:
-  type: 'sql'
-  url: 'postgresql://127.0.0.1:5432/postgres'
-  echo: 0
+    type: 'sql'
+    url: 'postgresql://127.0.0.1:5432/postgres'
+    echo: 0
 
 standby_01:
-  type: 'sql'
-  url: 'postgresql://127.0.0.1:5432/test1'
-  echo: 0
+    type: 'sql'
+    url: 'postgresql://127.0.0.1:5432/test1'
+    echo: 0
 
 standby_02:
-  type: 'sql'
-  url: 'postgresql://127.0.0.1:5432/test2'
-  echo: 0
+    type: 'sql'
+    url: 'postgresql://127.0.0.1:5432/test2'
+    echo: 0
 
 secret:
-  type: 'secret'
-  extensions:
+    type: 'secret'
+    extensions:
     - '/data/private/credents/secret.json'
 
-  fernet:
+    fernet:
     - "zwAdSdG1lAs2nHefWcyGf9loMXfTdTiqrz-Fgpe3kv4="
     - "ObWHDsMLra835J-vk2TlzIc0UY1wpb3dxDhnlNLSkbg="
-  session: "GoY/iz5hZXxWX0yNVjTrB0!F9AK4N~"
-  chatroom:
-    ~active: "8wp_weVO1Ygd8qt2zr"
-    v20170330: "18udioVzsnLT9Fu89s"
-    v20170328: "my-old-key"
+    session: "GoY/iz5hZXxWX0yNVjTrB0!F9AK4N~"
+    chatroom:
+        ~active: "8wp_weVO1Ygd8qt2zr"
+        v20170330: "18udioVzsnLT9Fu89s"
+        v20170328: "my-old-key"
 
 general:
-  extensions: []
-  alice: 1
-  bob: 2
+    extensions: []
+    alice: 1
+    bob: 2

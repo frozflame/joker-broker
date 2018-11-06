@@ -8,29 +8,23 @@ import random
 import weakref
 from collections import defaultdict
 
-
-def _import_requirements():
-    """
-    A dummy function to list all imports
-    These imports are slow!
-    """
-    from joker.broker.security import HashedPath
-    from joker.broker.interfaces.rediz import RedisInterface
-    from joker.broker.interfaces.rediz import FakeRedisInterface
-    from joker.broker.interfaces.rediz import NullRedisInterface
-    from joker.broker.interfaces.sequel import SQLInterface
-    from joker.broker.interfaces.static import deserialize_conf
-    from joker.broker.interfaces.static import GeneralInterface
-    from joker.broker.interfaces.static import SecretInterface
-    return [
-        GeneralInterface, SecretInterface, SQLInterface,
-        RedisInterface, FakeRedisInterface, NullRedisInterface,
-        HashedPath, deserialize_conf,
-    ]
+__all__ = ['Conf', 'compute_hash']
 
 
 def _factory():
     return defaultdict(_factory)
+
+
+def compute_hash(path, algor='md5', chunksize=1024):
+    import hashlib
+    hashfunc = hashlib.new(algor)
+    chunksize *= 1024
+    with open(path, 'rb') as fin:
+        chunk = fin.read(chunksize)
+        while chunk:
+            hashfunc.update(chunk)
+            chunk = fin.read(chunksize)
+    return hashfunc.hexdigest()
 
 
 class Conf(defaultdict):
@@ -46,8 +40,7 @@ class Conf(defaultdict):
         if path in cls.cached_instances:
             return cls.cached_instances[path]
 
-        from joker.broker.security import HashedPath
-        sha1 = HashedPath.calc_hash(path, 'sha1')
+        sha1 = compute_hash(path, 'sha1')
         if sha1 in cls.cached_instances:
             return cls.cached_instances[sha1]
 
@@ -99,26 +92,26 @@ class ResourceBroker(object):
                     self.standby_interfaces.append(self.interfaces[name])
 
             elif typ == 'redis':
-                from joker.broker.interfaces.rediz import RedisInterface
+                from joker.broker.interfaces.redis_ import RedisInterface
                 self.interfaces[name] = RedisInterface.from_conf(section)
 
             elif typ == 'fakeredis':
-                from joker.broker.interfaces.rediz import FakeRedisInterface
+                from joker.broker.interfaces.redis_ import FakeRedisInterface
                 self.interfaces[name] = FakeRedisInterface.from_conf(section)
 
             elif typ == 'nullredis':
-                from joker.broker.interfaces.rediz import NullRedisInterface
+                from joker.broker.interfaces.redis_ import NullRedisInterface
                 self.interfaces[name] = NullRedisInterface.from_conf(section)
 
         if ('primary' in self.interfaces) and self.standby_interfaces:
-                from sqlalchemy.orm import scoped_session, sessionmaker
-                from joker.broker.interfaces.sequel import RoutingSession
-                kwargs = {
-                    'primary_engine': self.primary.engine,
-                    'standby_engines': [x.engine for x in self.standby_interfaces],
-                }
-                factory = sessionmaker(class_=RoutingSession, **kwargs)
-                self.session_klass = scoped_session(factory)
+            from sqlalchemy.orm import scoped_session, sessionmaker
+            from joker.broker.interfaces.sequel import RoutingSession
+            kwargs = {
+                'primary_engine': self.primary.engine,
+                'standby_engines': [x.engine for x in self.standby_interfaces],
+            }
+            factory = sessionmaker(class_=RoutingSession, **kwargs)
+            self.session_klass = scoped_session(factory)
         else:
             self.session_klass = self.primary.session_klass
 

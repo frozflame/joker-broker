@@ -12,6 +12,8 @@ from sqlalchemy import select, tuple_, and_
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.inspection import inspect
 
+__all__ = ['DeclBase', 'Toolbox', 'commit_or_rollback']
+
 
 def _unflatten(obj):
     if isinstance(obj, tuple):
@@ -38,6 +40,7 @@ class Toolbox(object):
     Base class for Viewmodels
         just remove the need to pass session obj for every func
     """
+
     def __init__(self, resource_broker, session=None):
         """
         :type resource_broker: joker.broker.access.ResourceBroker
@@ -250,6 +253,3 @@ class DeclBase(declarative_base()):
         if form == 'd':
             return [dict(r) for r in rows]
         return rows
-
-
-__all__ = ['DeclBase', 'Toolbox']

@@ -9,8 +9,6 @@ from collections import OrderedDict
 
 import yaml
 
-from joker.broker.security import HashedPath
-
 
 def deserialize_conf(path):
     ext = os.path.splitext(path)[1]
@@ -21,14 +19,11 @@ def deserialize_conf(path):
     raise ValueError('unrecognizable extension: {}'.format(ext))
 
 
-class IntegrityError(ValueError):
-    pass
-
-
 class StaticInterface(object):
     """
     A strict and immutable dict-like object
     """
+
     def __init__(self, data=None):
         self._data = dict(data or {})
 
@@ -47,10 +42,7 @@ class StaticInterface(object):
 
     @classmethod
     def _load_extension_from_file(cls, path):
-        hp = HashedPath.parse(path)
-        if not hp.verify():
-            raise IntegrityError(path)
-        return cls._standardize(deserialize_conf(hp.path))
+        return cls._standardize(deserialize_conf(path))
 
     @classmethod
     def from_conf(cls, conf_section):
@@ -115,4 +107,3 @@ class SecretInterface(StaticInterface):
                 secret_keys = {-i: s for i, s in enumerate(secret_keys)}
             data[name] = cls._sort_versions(secret_keys)
         return data
-

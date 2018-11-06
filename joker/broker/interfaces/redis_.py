@@ -7,21 +7,9 @@ import random
 from collections import OrderedDict
 
 from fakeredis import FakeStrictRedis
-from redis import StrictRedis
 from joker.cast import represent
 from joker.cast.syntax import noop
-
-
-def want_str(s, *args, **kwargs):
-    """
-    :param s:
-    :param args: positional arguments passed to s.decode(..)
-    :param kwargs: keyword arguments passed to s.decode(..)
-    :return:
-    """
-    if not isinstance(s, str):
-        return s.decode(*args, **kwargs)
-    return s
+from redis import StrictRedis
 
 
 class RedisInterfaceMixin(object):
@@ -116,4 +104,3 @@ class NullRedisInterface(RedisInterfaceMixin):
     @classmethod
     def from_url(cls, url, **kwargs):
         return cls()
-
