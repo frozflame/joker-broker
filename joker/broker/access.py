@@ -8,8 +8,6 @@ import random
 import weakref
 from collections import defaultdict
 
-__all__ = ['Conf', 'compute_hash']
-
 
 def _factory():
     return defaultdict(_factory)
