@@ -7,7 +7,7 @@ import os
 from collections import OrderedDict
 
 import yaml
-from joker.place import under_joker_dir
+from joker.default import under_joker_dir, make_joker_dir
 
 default_conf_path = under_joker_dir('broker.yml')
 
@@ -94,7 +94,6 @@ def dump_default_conf(path=default_conf_path):
 
 
 def setup_joker_dir():
-    from joker.cast.locational import make_joker_dir
     make_joker_dir()
     dump_default_conf()
 
