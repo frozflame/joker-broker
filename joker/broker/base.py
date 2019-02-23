@@ -8,21 +8,21 @@ import json
 from decimal import Decimal
 
 from joker.cast import represent
-from sqlalchemy import select, tuple_, and_
+from sqlalchemy import Table, select, tuple_, and_
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.inspection import inspect
-
-
-def _unflatten(obj):
-    if isinstance(obj, tuple):
-        return obj
-    return obj,
 
 
 def _flatten(tup):
     if isinstance(tup, tuple) and len(tup) == 1:
         return tup[0]
     return tup
+
+
+def _unflatten(obj):
+    if isinstance(obj, tuple):
+        return obj
+    return obj,
 
 
 def commit_or_rollback(session):
@@ -67,6 +67,11 @@ class Toolbox(object):
             kvpairs = [(x.cache_key, x.serialize()) for x in items]
             self.cache.set_many(kvpairs)
 
+    def bulk_insert(self, target, records):
+        if not isinstance(target, Table):
+            target = target.__table__
+        return self.rb.primary.engine.execute(target.insert(), records)
+
 
 class DeclBase(declarative_base()):
     __abstract__ = True
@@ -75,8 +80,12 @@ class DeclBase(declarative_base()):
     def __repr__(self):
         if self.representation_columns:
             return represent(self, self.representation_columns)
-        fields = [c.name for c in self.__table__.primary_key]
+        fields = [c.name for c in self.get_table().primary_key]
         return represent(self, fields)
+
+    @classmethod
+    def get_table(cls):
+        return getattr(cls, '__table__')
 
     def get_identity(self, flat=True):
         identity = inspect(self).identity
@@ -87,7 +96,7 @@ class DeclBase(declarative_base()):
     @classmethod
     def format_cache_key(cls, ident):
         c = cls.__name__
-        t = cls.__table__.name
+        t = cls.get_table().name
         x = '_'.join(str(i) for i in _unflatten(ident))
         return '{}:{}:{}'.format(c, t, x)
 
@@ -124,7 +133,7 @@ class DeclBase(declarative_base()):
             remainders = idents
 
         if remainders:
-            tbl = cls.__table__
+            tbl = cls.get_table()
             cond = tuple_(*tbl.primary_key).in_(remainders)
             query = session.query(cls).filter(cond)
             for o in query.all():
@@ -133,7 +142,7 @@ class DeclBase(declarative_base()):
 
     def as_json_serializable(self, fields=None):
         result = {}
-        names = {c.name for c in self.__table__.columns}
+        names = {c.name for c in self.get_table().columns}
         if fields is None:
             fields = names
         else:
@@ -193,7 +202,7 @@ class DeclBase(declarative_base()):
         meta.create_all(bind=engine)
 
     @classmethod
-    def find(cls, cond, session, form='o', **kwargs):
+    def find(cls, cond, session, form='o', start=0, limit=1000, order=None):
         """
         :type cond: whereclause / dict
         :param cond: e.g. {'name': 'alice', 'gender': 'female'}
@@ -208,19 +217,22 @@ class DeclBase(declarative_base()):
         'p' for sqlalchemy.engine.result.RowProxy,
         'i' for identity (primary key value)
 
-        :parameter start: pagination offset, int, default 0
-        :parameter limit: pagination limit, int, default 1000
-        :parameter order: sqalchemy clauses
+        :type start: int
+        :param start: pagination offset, int, default 0
+        :type limit: int
+        :param limit: pagination limit, int, default 1000
+        :param order: sqlalchemy clauses
         """
         allowed_forms = {'o', 'p', 'd', 'i'}
         if form not in allowed_forms:
             msg = 'form must be chosen from {}'.format(allowed_forms)
             raise ValueError(msg)
 
-        tbl = cls.__table__
-        order = kwargs.get('order', tuple(tbl.primary_key))
-        start = kwargs.get('start', 0)
-        limit = kwargs.get('limit', 1000)
+        tbl = getattr(cls, '__table__')
+        if not order:
+            order = tuple(tbl.primary_key)
+        elif not isinstance(order, (tuple, list)):
+            order = order,
 
         # reduce db bandwidth cost if only pk is required
         if form == 'i':
@@ -233,14 +245,15 @@ class DeclBase(declarative_base()):
             for k, v in cond.items():
                 expressions.append(getattr(tbl.c, k) == v)
             cond = and_(*expressions)
+
         stmt = stmt.where(cond)
-        if isinstance(order, (list, tuple)):
-            stmt = stmt.order_by(*order)
-        else:
-            stmt = stmt.order_by(order)
-        stmt = stmt.limit(limit)
+        stmt = stmt.order_by(*order)
+
         if start:
             stmt = stmt.offset(start)
+        if limit:
+            stmt = stmt.limit(limit)
+
         rows = list(session.execute(stmt))
         if form == 'p':
             return rows

@@ -12,27 +12,6 @@ from joker.default import under_joker_dir, make_joker_dir
 default_conf_path = under_joker_dir('broker.yml')
 
 
-def locate_standard_conf(package):
-    # a string is also acceptable
-    name = getattr(package, '__name__', package)
-    workdirs = [os.environ.get('{}_WORKDIR'.format(name.upper()))]
-
-    # look for ~/.<package> and /data/<package>
-    # ONLY IF <package>_WORKDIR is not set
-    if workdirs[0] is None:
-        workdirs = [
-            os.path.expanduser('~/.{}'.format(name)),
-            '/data/{}/'.format(name),
-        ]
-        workdirs = [d for d in workdirs if os.path.isdir(d)]
-
-    for d in workdirs:
-        p = os.path.join(d, 'configs/{}.yml'.format(name))
-        if p and os.path.isfile(p):
-            return p
-    raise ValueError('config file not found')
-
-
 def represent_odict(self, data):
     return self.represent_mapping('tag:yaml.org,2002:map', data.items())
 
