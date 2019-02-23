@@ -2,6 +2,9 @@
 Changes of joker-broker
 =======================
 
+### 0.2.2
+* add `Toolbox.bulk_insert`
+* remove `j.b.default.locate_standard_conf`
 
 ### 0.2.1
 * use `j.default` (package `joker`)
