@@ -34,4 +34,16 @@ Use in an interactive shell like this:
     ins = tbl.insert()
     ins.execute(records)
     
-    list(tbl.select().execute()) 
+    list(tbl.select().execute())
+    
+    
+Use `ResourceBroker` for your project:
+    
+    _resource_broker = None
+
+    def get_resource_broker():
+        global _resource_broker
+        if _resource_broker is None:
+            path = '/data/myapp/broker.yml'  # path to your conf
+            _resource_broker = ResourceBroker.create(path)
+        return _resource_broker

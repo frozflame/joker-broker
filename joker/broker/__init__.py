@@ -3,7 +3,7 @@
 
 from joker.broker.access import ResourceBroker
 
-__version__ = '0.2.2'
+__version__ = '0.2.3'
 
 
 def get_resource_broker(path=None):

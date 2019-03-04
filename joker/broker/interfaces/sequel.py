@@ -18,14 +18,15 @@ class RoutingSession(Session):
     def __init__(self, primary_engine, standby_engines, **kwargs):
         super(RoutingSession, self).__init__(**kwargs)
         self.primary_engine = primary_engine
-        self.standby_engines = list(standby_engines)
+        self.standby_engines = list(standby_engines) or [primary_engine]
 
     def get_bind(self, mapper=None, clause=None):
         # return self.bind
         if self._flushing:
             return self.primary_engine
-        else:
-            return random.choice(self.standby_engines)
+        if len(self.standby_engines) == 1:
+            return self.standby_engines[0]
+        return random.choice(self.standby_engines)
 
 
 class SQLInterface(object):

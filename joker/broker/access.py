@@ -66,7 +66,8 @@ class ResourceBroker(object):
         """
         # interfaces are slow to import, so import when needed
         self.conf = conf
-        self.interfaces = dict()
+        self.interfaces = {}
+        self.session_klass = None
         self.standby_interfaces = []
         section_names = list(conf.keys())
         section_names.sort()
@@ -101,7 +102,7 @@ class ResourceBroker(object):
                 from joker.broker.interfaces.redis_ import NullRedisInterface
                 self.interfaces[name] = NullRedisInterface.from_conf(section)
 
-        if ('primary' in self.interfaces) and self.standby_interfaces:
+        if 'primary' in self.interfaces:
             from sqlalchemy.orm import scoped_session, sessionmaker
             from joker.broker.interfaces.sequel import RoutingSession
             kwargs = {
@@ -110,8 +111,6 @@ class ResourceBroker(object):
             }
             factory = sessionmaker(class_=RoutingSession, **kwargs)
             self.session_klass = scoped_session(factory)
-        else:
-            self.session_klass = self.primary.session_klass
 
     @classmethod
     def create(cls, path):
@@ -179,7 +178,7 @@ class ResourceBroker(object):
             # fallback to set-n-forget cache;
             # also making this property type-inferrable.
             # slow to import, so import when needed
-            from joker.broker.interfaces.rediz import NullRedisInterface
+            from joker.broker.interfaces.redis_ import NullRedisInterface
             si = NullRedisInterface()
             return self.interfaces.setdefault(name, si)
 
