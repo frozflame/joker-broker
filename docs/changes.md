@@ -2,6 +2,9 @@
 Changes of joker-broker
 =======================
 
+### 0.3.0
+* refactor: `ResourceBroker` is less verbose
+
 ### 0.2.3
 * primary interface is not compulsory now
 

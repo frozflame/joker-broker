@@ -57,6 +57,58 @@ class ResourceNotFoundError(Exception):
     pass
 
 
+def _setup_general_interface(conf_section):
+    from joker.broker.interfaces.static import GeneralInterface
+    if conf_section is None:
+        return GeneralInterface.from_default()
+    return GeneralInterface.from_conf(conf_section)
+
+
+def _setup_secret_interface(conf_section):
+    from joker.broker.interfaces.static import SecretInterface
+    if conf_section is None:
+        return SecretInterface.from_default()
+    return SecretInterface.from_conf(conf_section)
+
+
+def _setup_sql_interface(conf_section):
+    from joker.broker.interfaces.sequel import SQLInterface
+    if conf_section is None:
+        # fallback to in-memory SQLite;
+        return SQLInterface.from_default()
+    return SQLInterface.from_conf(conf_section)
+
+
+def _setup_redis_interface(conf_section):
+    from joker.broker.interfaces import redis_
+    if conf_section is None:
+        # fallback to set-n-forget cache, i.e. nullreids
+        return redis_.NullRedisInterface()
+    return redis_.RedisInterface.from_conf(conf_section)
+
+
+def _setup_fakeredis_interface(conf_section):
+    from joker.broker.interfaces import redis_
+    if conf_section is None:
+        # fallback to set-n-forget cache, i.e. nullreids
+        return redis_.NullRedisInterface()
+    return redis_.FakeRedisInterface.from_conf(conf_section)
+
+
+def _setup_nullredis_interface(_):
+    from joker.broker.interfaces.redis_ import NullRedisInterface
+    return NullRedisInterface()
+
+
+_interface_types = {
+    'fakeredis': _setup_fakeredis_interface,
+    'nullredis': _setup_nullredis_interface,
+    'redis': _setup_redis_interface,
+    'secret': _setup_secret_interface,
+    'sql': _setup_sql_interface,
+}
+
+
 class ResourceBroker(object):
     cached_instances = weakref.WeakValueDictionary()
 
@@ -69,48 +121,16 @@ class ResourceBroker(object):
         self.interfaces = {}
         self.session_klass = None
         self.standby_interfaces = []
-        section_names = list(conf.keys())
-        section_names.sort()
+        # why I did this?
+        # section_names = list(conf.keys())
+        # section_names.sort()
 
-        for name in section_names:
-            section = conf[name]
+        for name, section in conf.items():
             typ = section.get('type')
-
-            if not typ or typ == 'general':
-                from joker.broker.interfaces.static import GeneralInterface
-                self.interfaces[name] = GeneralInterface.from_conf(section)
-
-            elif typ == 'secret':
-                from joker.broker.interfaces.static import SecretInterface
-                self.interfaces[name] = SecretInterface.from_conf(section)
-
-            elif typ == 'sql':
-                from joker.broker.interfaces.sequel import SQLInterface
-                self.interfaces[name] = SQLInterface.from_conf(section)
-                if name.lower().startswith('standby'):
-                    self.standby_interfaces.append(self.interfaces[name])
-
-            elif typ == 'redis':
-                from joker.broker.interfaces.redis_ import RedisInterface
-                self.interfaces[name] = RedisInterface.from_conf(section)
-
-            elif typ == 'fakeredis':
-                from joker.broker.interfaces.redis_ import FakeRedisInterface
-                self.interfaces[name] = FakeRedisInterface.from_conf(section)
-
-            elif typ == 'nullredis':
-                from joker.broker.interfaces.redis_ import NullRedisInterface
-                self.interfaces[name] = NullRedisInterface.from_conf(section)
-
-        if 'primary' in self.interfaces:
-            from sqlalchemy.orm import scoped_session, sessionmaker
-            from joker.broker.interfaces.sequel import RoutingSession
-            kwargs = {
-                'primary_engine': self.primary.engine,
-                'standby_engines': [x.engine for x in self.standby_interfaces],
-            }
-            factory = sessionmaker(class_=RoutingSession, **kwargs)
-            self.session_klass = scoped_session(factory)
+            interface = _interface_types.get(typ, _setup_general_interface)(section)
+            self.interfaces[name] = interface
+            if name.lower().startswith('standby'):
+                self.standby_interfaces.append(interface)
 
     @classmethod
     def create(cls, path):
@@ -140,47 +160,13 @@ class ResourceBroker(object):
             msg = msg.format(interface_name)
             raise ResourceNotFoundError(msg)
 
-    # The following code seems redundant,
-    # but I cannot find a better way to ensure both IDE's grammar inferrence
-    # and lazy import of Interface classes work well.
-
-    def get_general_interface(self, name):
+    def _get_interface(self, name, typ):
         try:
-            return self[name]
+            return self.interfaces[name]
         except KeyError:
-            from joker.broker.interfaces.static import GeneralInterface
-            gi = GeneralInterface.from_default()
-            return self.interfaces.setdefault(name, gi)
-
-    def get_secret_interface(self, name):
-        try:
-            return self[name]
-        except KeyError:
-            from joker.broker.interfaces.static import SecretInterface
-            si = SecretInterface.from_default()
-            return self.interfaces.setdefault(name, si)
-
-    def get_sql_interface(self, name):
-        try:
-            return self[name]
-        except KeyError:
-            # fallback to in-memory SQLite;
-            # also making this property type-inferrable.
-            # slow to import, so import when needed
-            from joker.broker.interfaces.sequel import SQLInterface
-            si = SQLInterface.from_default()
-            return self.interfaces.setdefault(name, si)
-
-    def get_redis_interface(self, name):
-        try:
-            return self[name]
-        except KeyError:
-            # fallback to set-n-forget cache;
-            # also making this property type-inferrable.
-            # slow to import, so import when needed
-            from joker.broker.interfaces.redis_ import NullRedisInterface
-            si = NullRedisInterface()
-            return self.interfaces.setdefault(name, si)
+            interface = _interface_types.get(typ, _setup_general_interface)(None)
+            self.interfaces[name] = interface
+            return interface
 
     def get_session(self):
         """
@@ -188,41 +174,62 @@ class ResourceBroker(object):
         http://docs.sqlalchemy.org/en/latest/orm/persistence_techniques.html
         #custom-vertical-partitioning
         """
+        if self.session_klass is None:
+            from joker.broker.interfaces.sequel import get_session_klass
+            self.session_klass = \
+                get_session_klass(self.primary, self.standby_interfaces)
         return self.session_klass()
 
     # some preset interfaces:
     # general, secret, primary, standby, lite, cache, kvstore
     @property
     def general(self):
-        return self.get_general_interface('general')
+        """:rtype: joker.broker.interfaces.static.GeneralInterface"""
+        return self._get_interface('general', 'general')
 
     @property
     def secret(self):
-        return self.get_secret_interface('secret')
+        """:rtype: joker.broker.interfaces.static.SecretInterface"""
+        return self._get_interface('secret', 'secret')
 
     @property
     def primary(self):
-        """Intend to be a standby (slave) RDB instance"""
-        return self.get_sql_interface('primary')
+        """
+        Intend to be a standby (slave) RDB instance
+        :rtype: joker.broker.interfaces.sequel.SQLInterface
+        """
+        return self._get_interface('primary', 'sql')
 
     @property
     def standby(self):
-        """Intend to be a standby (slave) RDB instance"""
+        """
+        Intend to be a standby (slave) RelDB instance
+        :rtype: joker.broker.interfaces.sequel.SQLInterface
+        """
         if self.standby_interfaces:
             return random.choice(self.standby_interfaces)
         return self.primary
 
     @property
     def lite(self):
-        """Intend to be a single file SQLite instance"""
-        return self.get_sql_interface('lite')
+        """
+        Intend to be a single file SQLite instance
+        :rtype: joker.broker.interfaces.sequel.SQLInterface
+        """
+        return self._get_interface('lite', 'sql')
 
     @property
     def cache(self):
-        """Intend to be a volatile redis instance"""
-        return self.get_redis_interface('cache')
+        """
+        Intend to be a volatile redis instance
+        :rtype: joker.broker.interfaces.redis_.RedisInterface
+        """
+        return self._get_interface('cache', 'redis')
 
     @property
     def store(self):
-        """Intend to be a non-volatile (persisting) redis instance"""
-        return self.get_redis_interface('store')
+        """
+        Intend to be a non-volatile (persisting) redis instance
+        :rtype: joker.broker.interfaces.redis_.RedisInterface
+        """
+        return self._get_interface('store', 'redis')

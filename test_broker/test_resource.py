@@ -16,3 +16,7 @@ def test_resource_broker():
     rb = ResourceBroker.create(path)
     ResourceBroker.just_after_fork()
     print(rb)
+
+
+if __name__ == '__main__':
+    test_resource_broker()
