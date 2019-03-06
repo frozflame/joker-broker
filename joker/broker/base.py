@@ -31,6 +31,8 @@ def commit_or_rollback(session):
     except Exception:
         session.rollback()
         raise
+    finally:
+        session.close()
 
 
 class Toolbox(object):
@@ -52,6 +54,12 @@ class Toolbox(object):
             self.session = resource_broker.get_session()
         else:
             self.session = session
+
+    def __del__(self):
+        try:
+            self.session.close()
+        except Exception:
+            pass
 
     def commit_or_rollback(self):
         commit_or_rollback(self.session)

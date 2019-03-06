@@ -2,6 +2,9 @@
 Changes of joker-broker
 =======================
 
+### 0.3.1
+* do `session.close()`
+
 ### 0.3.0
 * refactor: `ResourceBroker` is less verbose
 
