@@ -80,7 +80,7 @@ class RedisInterface(StrictRedis, RedisInterfaceMixin):
 
 class FakeRedisInterface(FakeStrictRedis, RedisInterfaceMixin):
     def __repr__(self):
-        return represent(self, {'db': self._db_num})
+        return represent(self, {})
 
 
 class NullRedisInterface(RedisInterfaceMixin):
