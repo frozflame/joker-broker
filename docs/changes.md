@@ -2,6 +2,10 @@
 Changes of joker-broker
 =======================
 
+### 0.4.1
+* change default conf path ~/.joker/broker/resources.yml
+* remove lite section in in default conf
+
 ### 0.4.0
 * Toolbox: do not close session in `__delete__` if created with external session passed in `__init__`
 * DeclBase.create_all_tables: not allowed in non-abstract models
