@@ -30,7 +30,7 @@ def impose_order(dic, order):
 
 
 def get_default_conf():
-    url = 'sqlite:///' + under_joker_dir('lite.db')
+    url = 'sqlite:///' + under_joker_dir('broker/lite.db')
     default_conf = {
         'cache': {
             'type': 'fakeredis',
