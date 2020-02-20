@@ -14,6 +14,8 @@ def _factory():
 
 
 def compute_hash(path, algor='md5', chunksize=1024):
+    """compute hash given a file pathname"""
+    # similar to: joker.stream.utils.checksum
     import hashlib
     hashfunc = hashlib.new(algor)
     chunksize *= 1024
@@ -80,23 +82,23 @@ def _setup_sql_interface(conf_section):
 
 
 def _setup_redis_interface(conf_section):
-    from joker.broker.interfaces import redis_
+    from joker.broker.interfaces import redis
     if conf_section is None:
         # fallback to set-n-forget cache, i.e. nullreids
-        return redis_.NullRedisInterface()
-    return redis_.RedisInterface.from_conf(conf_section)
+        return redis.NullRedisInterface()
+    return redis.RedisInterface.from_conf(conf_section)
 
 
 def _setup_fakeredis_interface(conf_section):
-    from joker.broker.interfaces import redis_
+    from joker.broker.interfaces import redis
     if conf_section is None:
         # fallback to set-n-forget cache, i.e. nullreids
-        return redis_.NullRedisInterface()
-    return redis_.FakeRedisInterface.from_conf(conf_section)
+        return redis.NullRedisInterface()
+    return redis.FakeRedisInterface.from_conf(conf_section)
 
 
 def _setup_nullredis_interface(_):
-    from joker.broker.interfaces.redis_ import NullRedisInterface
+    from joker.broker.interfaces.redis import NullRedisInterface
     return NullRedisInterface()
 
 
@@ -127,10 +129,12 @@ class ResourceBroker(object):
 
         for name, section in conf.items():
             typ = section.get('type')
-            interface = _interface_types.get(typ, _setup_general_interface)(section)
-            self.interfaces[name] = interface
+            _setup = _setup_general_interface
+            _setup = _interface_types.get(typ, _setup)
+            interf = _setup(section)
+            self.interfaces[name] = interf
             if name.lower().startswith('standby'):
-                self.standby_interfaces.append(interface)
+                self.standby_interfaces.append(interf)
 
     @classmethod
     def create(cls, path):
@@ -195,7 +199,7 @@ class ResourceBroker(object):
     @property
     def primary(self):
         """
-        Intend to be a standby (slave) RDB instance
+        Intend to be a primary (master) RDB instance
         :rtype: joker.broker.interfaces.sequel.SQLInterface
         """
         return self._get_interface('primary', 'sql')
@@ -203,7 +207,7 @@ class ResourceBroker(object):
     @property
     def standby(self):
         """
-        Intend to be a standby (slave) RelDB instance
+        Intend to be a standby (slave) RDB instance
         :rtype: joker.broker.interfaces.sequel.SQLInterface
         """
         if self.standby_interfaces:
@@ -211,18 +215,10 @@ class ResourceBroker(object):
         return self.primary
 
     @property
-    def lite(self):
-        """
-        Intend to be a single file SQLite instance
-        :rtype: joker.broker.interfaces.sequel.SQLInterface
-        """
-        return self._get_interface('lite', 'sql')
-
-    @property
     def cache(self):
         """
         Intend to be a volatile redis instance
-        :rtype: joker.broker.interfaces.redis_.RedisInterface
+        :rtype: joker.broker.interfaces.redis.RedisInterface
         """
         return self._get_interface('cache', 'redis')
 
@@ -230,6 +226,6 @@ class ResourceBroker(object):
     def store(self):
         """
         Intend to be a non-volatile (persisting) redis instance
-        :rtype: joker.broker.interfaces.redis_.RedisInterface
+        :rtype: joker.broker.interfaces.redis.RedisInterface
         """
         return self._get_interface('store', 'redis')

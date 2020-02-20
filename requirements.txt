@@ -1,7 +1,7 @@
-fakeredis
-joker-cast>=0.0.11
-joker>=0.1.0
-pyyaml
-redis
-six
 sqlalchemy
+redis
+fakeredis
+pyyaml
+six
+joker>=0.1.0
+joker-cast>=0.0.11
