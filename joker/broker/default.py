@@ -9,7 +9,7 @@ from collections import OrderedDict
 import yaml
 from joker.default import under_joker_dir, make_joker_dir
 
-default_conf_path = under_joker_dir('broker.yml')
+default_conf_path = under_joker_dir('broker/resources.yml')
 
 
 def represent_odict(self, data):
@@ -37,26 +37,21 @@ def get_default_conf():
             'url': 'redis://127.0.0.1:6379/0',
         },
         'primary': {
-            'echo': 0,
             'type': 'sql',
             'url': url,
+            'echo': 0,
         },
         'standby': {
             'type': 'sql',
-            'echo': 0,
             'url': url,
-        },
-        'lite': {
-            'type': 'sql',
             'echo': 0,
-            'url': url,
         },
         'secret': {
             'type': 'secret',
             'extensions': [],
         },
     }
-    sections = ['cache', 'lite', 'primary', 'standby', 'secret']
+    sections = ['cache', 'primary', 'standby', 'secret']
     return impose_order(default_conf, sections)
 
 
@@ -73,7 +68,7 @@ def dump_default_conf(path=default_conf_path):
 
 
 def setup_joker_dir():
-    make_joker_dir()
+    make_joker_dir('broker')
     dump_default_conf()
 
 
