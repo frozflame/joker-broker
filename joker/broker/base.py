@@ -7,6 +7,7 @@ import datetime
 import json
 from decimal import Decimal
 
+import sqlalchemy.exc
 from joker.cast import represent
 from sqlalchemy import Table, select, tuple_, and_
 from sqlalchemy.ext.declarative import declarative_base
@@ -31,8 +32,6 @@ def commit_or_rollback(session):
     except Exception:
         session.rollback()
         raise
-    finally:
-        session.close()
 
 
 class Toolbox(object):
@@ -52,10 +51,14 @@ class Toolbox(object):
         self.cache = resource_broker.cache
         if session is None:
             self.session = resource_broker.get_session()
+            self._using_priveate_session = True
         else:
             self.session = session
+            self._using_priveate_session = False
 
     def __del__(self):
+        if not self._using_priveate_session:
+            return
         try:
             self.session.close()
         except Exception:
@@ -203,6 +206,8 @@ class DeclBase(declarative_base()):
 
     @classmethod
     def create_all_tables(cls, engine):
+        if not cls.__abstract__:
+            raise TypeError('only available on base classes')
         meta = cls.metadata
         for schema in {t.schema for t in meta.tables.values()}:
             sql = 'CREATE SCHEMA IF NOT EXISTS "{}";'.format(schema)
@@ -262,7 +267,12 @@ class DeclBase(declarative_base()):
         if limit:
             stmt = stmt.limit(limit)
 
-        rows = list(session.execute(stmt))
+        try:
+            rows = list(session.execute(stmt))
+        except sqlalchemy.exc.SQLAlchemyError:
+            session.rollback()
+            raise
+
         if form == 'p':
             return rows
         if form == 'i':

@@ -13,7 +13,7 @@ import yaml
 def deserialize_conf(path):
     ext = os.path.splitext(path)[1]
     if ext.lower() in {'.yml', '.yaml'}:
-        return yaml.load(open(path))
+        return yaml.safe_load(open(path))
     elif ext.lower() == '.json':
         return json.load(open(path))
     raise ValueError('unrecognizable extension: {}'.format(ext))
