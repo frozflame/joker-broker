@@ -2,8 +2,15 @@
 Changes of joker-broker
 =======================
 
-### 0.3.1
-* do `session.close()`
+### 0.4.0
+* Toolbox: do not close session in `__delete__` if created with external session passed in `__init__`
+* DeclBase.create_all_tables: not allowed in non-abstract models
+* DeclBase.find: rollback on error
+* fix: FakeRedis has no attrib _db_num; rename redis_.py => redis.py
+* use yaml.safe_load
+* commit_or_rollback: do not close session
+* rename redis_.py to redis.py
+* remove rb.lite
 
 ### 0.3.0
 * refactor: `ResourceBroker` is less verbose
