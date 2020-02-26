@@ -46,7 +46,7 @@ class Toolkit(object):
         :param resource_broker:
         """
         if not resource_broker:
-            resource_broker = self._get_resource_broker
+            resource_broker = self._get_resource_broker()
         self.rb = resource_broker
 
 
