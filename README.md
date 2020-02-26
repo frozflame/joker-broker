@@ -50,6 +50,8 @@ list(tbl.select().execute())
 Use `ResourceBroker` for your project:
    
 ```python 
+from joker.broker import ResourceBroker
+
 _resource_broker = None
 
 def get_resource_broker():

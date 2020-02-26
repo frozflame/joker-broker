@@ -2,6 +2,9 @@
 Changes of joker-broker
 =======================
 
+### 0.4.2
+* Toolkit, StandardToolkit, Toolkit._get_resource_broker
+
 ### 0.4.1
 * change default conf path ~/.joker/broker/resources.yml
 * remove lite section in in default conf

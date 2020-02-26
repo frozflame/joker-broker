@@ -5,6 +5,7 @@ from __future__ import division, unicode_literals
 
 import datetime
 import json
+from abc import ABC
 from decimal import Decimal
 
 import sqlalchemy.exc
@@ -34,20 +35,35 @@ def commit_or_rollback(session):
         raise
 
 
-class Toolbox(object):
+class Toolkit(object):
+    @staticmethod
+    def _get_resource_broker():
+        raise NotImplementedError
+
+    def __init__(self, resource_broker=None):
+        """
+        :type resource_broker: joker.broker.access.ResourceBroker
+        :param resource_broker:
+        """
+        if not resource_broker:
+            resource_broker = self._get_resource_broker
+        self.rb = resource_broker
+
+
+class StandardToolkit(Toolkit, ABC):
     """
     Base class for Viewmodels
         just remove the need to pass session obj for every func
     """
 
-    def __init__(self, resource_broker, session=None):
+    def __init__(self, resource_broker=None, session=None):
         """
         :type resource_broker: joker.broker.access.ResourceBroker
         :param resource_broker:
         :type session: sqlalchemy.orm.Session
         :param session:
         """
-        self.rb = resource_broker
+        Toolkit.__init__(self, resource_broker)
         self.cache = resource_broker.cache
         if session is None:
             self.session = resource_broker.get_session()
@@ -82,6 +98,9 @@ class Toolbox(object):
         if not isinstance(target, Table):
             target = target.__table__
         return self.rb.primary.engine.execute(target.insert(), records)
+
+
+Toolbox = StandardToolkit
 
 
 class DeclBase(declarative_base()):
