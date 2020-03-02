@@ -15,13 +15,13 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.inspection import inspect
 
 
-def _flatten(tup):
+def flatten(tup):
     if isinstance(tup, tuple) and len(tup) == 1:
         return tup[0]
     return tup
 
 
-def _unflatten(obj):
+def unflatten(obj):
     if isinstance(obj, tuple):
         return obj
     return obj,
@@ -40,14 +40,14 @@ class Toolkit(object):
     def _get_resource_broker():
         raise NotImplementedError
 
-    def __init__(self, resource_broker=None):
+    def __init__(self, rb=None):
         """
-        :type resource_broker: joker.broker.access.ResourceBroker
-        :param resource_broker:
+        :type rb: joker.broker.access.ResourceBroker
+        :param rb:
         """
-        if not resource_broker:
-            resource_broker = self._get_resource_broker()
-        self.rb = resource_broker
+        if not rb:
+            rb = self._get_resource_broker()
+        self.rb = rb
 
 
 class StandardToolkit(Toolkit, ABC):
@@ -56,24 +56,24 @@ class StandardToolkit(Toolkit, ABC):
         just remove the need to pass session obj for every func
     """
 
-    def __init__(self, resource_broker=None, session=None):
+    def __init__(self, rb=None, session=None):
         """
-        :type resource_broker: joker.broker.access.ResourceBroker
-        :param resource_broker:
+        :type rb: joker.broker.access.ResourceBroker
+        :param rb:
         :type session: sqlalchemy.orm.Session
         :param session:
         """
-        Toolkit.__init__(self, resource_broker)
-        self.cache = resource_broker.cache
+        Toolkit.__init__(self, rb)
+        self.cache = self.rb.cache
         if session is None:
-            self.session = resource_broker.get_session()
-            self._using_priveate_session = True
+            self.session = self.rb.get_session()
+            self._using_private_session = True
         else:
             self.session = session
-            self._using_priveate_session = False
+            self._using_private_session = False
 
     def __del__(self):
-        if not self._using_priveate_session:
+        if not self._using_private_session:
             return
         try:
             self.session.close()
@@ -120,14 +120,14 @@ class DeclBase(declarative_base()):
     def get_identity(self, flat=True):
         identity = inspect(self).identity
         if flat:
-            identity = _flatten(identity)
+            identity = flatten(identity)
         return identity
 
     @classmethod
     def format_cache_key(cls, ident):
         c = cls.__name__
         t = cls.get_table().name
-        x = '_'.join(str(i) for i in _unflatten(ident))
+        x = '_'.join(str(i) for i in unflatten(ident))
         return '{}:{}:{}'.format(c, t, x)
 
     @property
@@ -150,7 +150,7 @@ class DeclBase(declarative_base()):
 
     @classmethod
     def load_many(cls, idents, session, cache=None):
-        idents = [_unflatten(it) for it in idents]
+        idents = [unflatten(it) for it in idents]
 
         if cache is not None:
             names = [cls.format_cache_key(it) for it in idents]
@@ -295,7 +295,7 @@ class DeclBase(declarative_base()):
         if form == 'p':
             return rows
         if form == 'i':
-            return [_flatten(tuple(r)) for r in rows]
+            return [flatten(tuple(r)) for r in rows]
         if form == 'o':
             return [cls(**dict(r)) for r in rows]
         if form == 'd':
