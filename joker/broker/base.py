@@ -246,8 +246,9 @@ class DeclBase(declarative_base()):
         :param form: ('o', 'p', 'd' or 'i') form of each record found
         'o' for model object (the bound class of this method),
         'd' for dict
-        'p' for sqlalchemy.engine.result.RowProxy,
+        'r' for sqlalchemy.engine.result.RowProxy,
         'i' for identity (primary key value)
+        'p' for sqlalchemy.engine.result.RowProxy, deprecated
 
         :type start: int
         :param start: pagination offset, int, default 0
@@ -255,7 +256,7 @@ class DeclBase(declarative_base()):
         :param limit: pagination limit, int, default 1000
         :param order: sqlalchemy clauses
         """
-        allowed_forms = {'o', 'p', 'd', 'i'}
+        allowed_forms = {'o', 'r', 'd', 'i', 'p'}
         if form not in allowed_forms:
             msg = 'form must be chosen from {}'.format(allowed_forms)
             raise ValueError(msg)
@@ -292,12 +293,13 @@ class DeclBase(declarative_base()):
             session.rollback()
             raise
 
-        if form == 'p':
-            return rows
         if form == 'i':
             return [flatten(tuple(r)) for r in rows]
         if form == 'o':
             return [cls(**dict(r)) for r in rows]
         if form == 'd':
             return [dict(r) for r in rows]
+        if form == 'p':
+            import warnings
+            warnings.warn("form='p' is deprecated, use 'r' instead")
         return rows
