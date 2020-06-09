@@ -2,12 +2,10 @@
 Changes of joker-broker
 =======================
 
-### new 
-* deprecate form='p', use 'r' instead 
-
 ### 0.4.2
 * Toolkit, Toolkit._get_resource_broker
 * rename Toolbox to StandardToolkit (aliased Toolbox for backward compat.)
+* deprecate form='p', use 'r' instead 
 
 ### 0.4.1
 * change default conf path ~/.joker/broker/resources.yml
