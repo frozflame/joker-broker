@@ -1,7 +1,10 @@
 sqlalchemy
+json5
 redis
 fakeredis
 pyyaml
 six
-joker>=0.1.0
+volkanic>=0.3.3
+joker>=0.2.3
 joker-cast>=0.0.11
+itsdangerous
