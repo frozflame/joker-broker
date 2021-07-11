@@ -80,4 +80,3 @@ zombies/*
 
 # quick and dirty jobs
 run.sh
-test_broker/tmp/
