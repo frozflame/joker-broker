@@ -7,7 +7,7 @@ import os
 from collections import OrderedDict
 
 import yaml
-from joker.environ import under_joker_dir, make_joker_dir
+from joker.environ.provincial import under_joker_dir, make_joker_dir
 
 default_conf_path = under_joker_dir('broker/resources.yml')
 
