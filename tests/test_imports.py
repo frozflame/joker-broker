@@ -3,12 +3,15 @@
 
 import importlib
 
+import volkanic
 from volkanic.introspect import find_all_plain_modules
 
-from joker.broker.environ import GlobalInterface
+
+class GlobalInterface(volkanic.GlobalInterface):
+    package_name = 'joker.broker'
+
 
 gi = GlobalInterface()
-
 dotpath_prefixes = [
     'joker.broker.',
     'tests.',

@@ -4,7 +4,6 @@
 __version__ = '0.5.0!'
 
 from joker.broker.access import ResourceBroker
-from joker.broker.environ import GlobalInterface
 
 
 def get_resource_broker(path=None):
