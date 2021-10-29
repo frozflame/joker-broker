@@ -3,6 +3,7 @@
 
 from __future__ import division, print_function
 
+import logging
 import os
 import random
 import warnings
@@ -10,6 +11,8 @@ import warnings
 from sqlalchemy import Table, MetaData, engine_from_config
 from sqlalchemy.exc import SAWarning
 from sqlalchemy.orm import Session, scoped_session, sessionmaker
+
+_logger = logging.getLogger(__name__)
 
 
 class RoutingSession(Session):

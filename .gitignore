@@ -80,3 +80,4 @@ zombies/*
 
 # quick and dirty jobs
 run.sh
+_local/
