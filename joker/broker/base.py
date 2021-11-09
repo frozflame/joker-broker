@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # coding: utf-8
 
-from __future__ import division, unicode_literals
-
 import datetime
 import json
 from abc import ABC
