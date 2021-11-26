@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 # coding: utf-8
 
-import json
 import os
 from collections import OrderedDict
 
 import yaml
+from volkanic.utils import load_json5_file
 
 
 def deserialize_conf(path):
     ext = os.path.splitext(path)[1]
     if ext.lower() in {'.yml', '.yaml'}:
         return yaml.safe_load(open(path))
-    elif ext.lower() == '.json':
-        return json.load(open(path))
+    elif ext.lower() in ['.json', '.json5']:
+        return load_json5_file(path)
     raise ValueError('unrecognizable extension: {}'.format(ext))
 
 

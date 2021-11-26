@@ -168,7 +168,7 @@ class ResourceBroker(object):
         #custom-vertical-partitioning
         """
         if self.session_klass is None:
-            from joker.broker.interfaces.sequel import get_session_klass
+            from joker.relational.tools.sessions import get_session_klass
             self.session_klass = \
                 get_session_klass(self.primary, self.standby_interfaces)
         return self.session_klass()
