@@ -31,7 +31,7 @@ def get_default_conf():
     url = 'sqlite:///' + under_joker_dir('broker/lite.db')
     default_conf = {
         'cache': {
-            'type': 'fakeredis',
+            'type': 'redis',
             'url': 'redis://127.0.0.1:6379/0',
         },
         'primary': {

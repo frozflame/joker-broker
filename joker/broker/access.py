@@ -87,21 +87,12 @@ def _setup_redis_interface(conf_section):
     return redis.RedisInterface.from_conf(conf_section)
 
 
-def _setup_fakeredis_interface(conf_section):
-    from joker.broker.interfaces import redis
-    if conf_section is None:
-        # fallback to set-n-forget cache, i.e. nullreids
-        return redis.NullRedisInterface()
-    return redis.FakeRedisInterface.from_conf(conf_section)
-
-
 def _setup_nullredis_interface(_):
     from joker.broker.interfaces.redis import NullRedisInterface
     return NullRedisInterface()
 
 
 _interface_types = {
-    'fakeredis': _setup_fakeredis_interface,
     'nullredis': _setup_nullredis_interface,
     'redis': _setup_redis_interface,
     'secret': _setup_secret_interface,
